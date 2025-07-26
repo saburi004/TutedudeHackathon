@@ -1,45 +1,63 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/dbConnect";
-import { verifyJWT } from "@/middleware/auth";
 import SalesInput from "@/models/SalesInput";
-
-// ✅ Connect to the database
-connectDB();
+import jwt from "jsonwebtoken";
 
 export async function POST(req) {
+  await connectDB();
+
+  const authHeader = req.headers.get("authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return NextResponse.json(
+      { error: "Unauthorized - Missing token" },
+      { status: 401 }
+    );
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  let decoded;
   try {
-    // ✅ 1. Get token from headers
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch (err) {
+    return NextResponse.json({ error: "Invalid token" }, { status: 403 });
+  }
 
-    const token = authHeader.split(" ")[1];
+  const body = await req.json();
+  const { foodItems } = body;
 
-    // ✅ 2. Verify token
-    const decoded = verifyJWT(token); // should return { id, ... }
+  if (!foodItems || !Array.isArray(foodItems) || foodItems.length === 0) {
+    return NextResponse.json(
+      { error: "Food items are required" },
+      { status: 400 }
+    );
+  }
 
-    if (!decoded || !decoded.id) {
-      return NextResponse.json({ message: "Invalid token" }, { status: 403 });
-    }
+  const hasInvalidItem = foodItems.some(
+    (item) =>
+      !item.itemName ||
+      typeof item.quantityPrepared !== "number" ||
+      typeof item.quantitySold !== "number"
+  );
 
-    // ✅ 3. Parse request body
-    const body = await req.json();
+  if (hasInvalidItem) {
+    return NextResponse.json({ error: "Invalid item format" }, { status: 400 });
+  }
 
-    // ✅ 4. Create new SalesInput with sellerId from token
-    const newInput = new SalesInput({
-      sellerId: decoded.id, // attaching seller ID from token
-      foodItems: body.foodItems,
+  try {
+    const newSale = await SalesInput.create({
+      sellerId: decoded.userId,
+      foodItems,
     });
 
-    // ✅ 5. Save to DB
-    await newInput.save();
-
-    return NextResponse.json({ message: "Sales data saved", data: newInput });
-  } catch (err) {
-    console.error("Sales input error:", err);
     return NextResponse.json(
-      { message: "Error saving sales input", error: err.message },
+      { message: "Sales data saved", data: newSale },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Sales Save Error:", error);
+    return NextResponse.json(
+      { error: "Failed to save sales" },
       { status: 500 }
     );
   }

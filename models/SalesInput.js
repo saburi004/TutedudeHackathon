@@ -1,9 +1,18 @@
 const mongoose = require("mongoose");
 
 const SalesItemSchema = new mongoose.Schema({
-  itemName: String,
-  quantityPrepared: Number,
-  quantitySold: Number,
+  itemName: {
+    type: String,
+    required: true,
+  },
+  quantityPrepared: {
+    type: Number,
+    required: true,
+  },
+  quantitySold: {
+    type: Number,
+    required: true,
+  },
 });
 
 const SalesInputSchema = new mongoose.Schema({
