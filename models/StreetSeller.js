@@ -2,7 +2,7 @@
 import mongoose from 'mongoose';
 
 const StreetSellerSchema = new mongoose.Schema({
-  sellerId: { type: String, unique: true },
+  Id: { type: String, unique: true },
   name: String,
   email: { type: String, unique: true },
   phone: String,
@@ -22,3 +22,4 @@ const StreetSellerSchema = new mongoose.Schema({
 });
 
 export default mongoose.models.StreetSeller || mongoose.model("StreetSeller", StreetSellerSchema);
+// /models/StreetSeller.js
