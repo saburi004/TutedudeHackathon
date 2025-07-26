@@ -104,12 +104,13 @@ def get_top_sellers(
 
 
 if __name__ == "__main__":
+    # Step 1: Train only once when dataset updates
+    train_and_save_model()
 
-
-    #Test example (Swargate, Potatoes)
-    lat, lon = 18.5018, 73.8586
-    product = "Potatoes"
-    scaler, kmeans, df = load_model_and_data()
-    result = get_top_sellers(lat, lon, product, top_n=5, 
-                             kmeans_model=kmeans, scaler_model=scaler, full_df=df)
-    print("🔍 Top Sellers near buyer:\n", result)
+    # Step 2: Test example (Swargate, Potatoes)
+    # lat, lon = 18.5018, 73.8586
+    # product = "Potatoes"
+    # scaler, kmeans, df = load_model_and_data()
+    # result = get_top_sellers(lat, lon, product, top_n=5, 
+    #                          kmeans_model=kmeans, scaler_model=scaler, full_df=df)
+    # print("🔍 Top Sellers near buyer:\n", result)
