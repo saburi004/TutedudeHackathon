@@ -2,7 +2,7 @@
 import mongoose from 'mongoose';
 
 const RawMaterialSellerSchema = new mongoose.Schema({
-  sellerId: { type: String, unique: true },
+sellerId: { type: String, unique: true, sparse: true },
   name: String,
   contact: {
     phone: String,

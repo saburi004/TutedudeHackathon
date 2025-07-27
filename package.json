@@ -10,7 +10,10 @@
   },
   "dependencies": {
     "@google/genai": "^1.11.0",
+<<<<<<< HEAD
     "@google/generative-ai": "^0.24.1",
+=======
+>>>>>>> 295f968e41ad1db3c0ef91998045ebd9d9521bac
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
     "dotenv": "^17.2.1",
@@ -20,7 +23,8 @@
     "next": "15.4.4",
     "nodemon": "^3.1.10",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "react-icons": "^5.5.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
