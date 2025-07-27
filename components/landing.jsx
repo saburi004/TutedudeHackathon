@@ -23,20 +23,20 @@ const SupplyChainLanding = () => {
   const features = [
     {
       icon: Package,
-      title: "We have Our ML Model",
-      description: "We know Distance matters..So here we have out ML model for showing you the nearest supplier you have",
+      title: "Quality Raw Materials",
+      description: "Premium quality ingredients sourced directly from trusted suppliers for your street food business.",
       color: "from-blue-400 to-cyan-500"
     },
     {
       icon: Truck,
-      title: "Wastage Estimation and Order Prediction Using LLM",
-      description: "Worried about how much to order we are here with our LLM Model that will guide you with quantity estimations.",
+      title: "Reliable Delivery",
+      description: "Fast and dependable delivery service ensuring your supplies reach you fresh and on time.",
       color: "from-green-400 to-emerald-500"
     },
     {
       icon: Handshake,
-      title: "Compare with different sellers",
-      description: "We provide you with a platfrom where you can compare pricing with different sellers",
+      title: "Fair Pricing",
+      description: "Competitive wholesale prices that help street vendors maximize their profit margins.",
       color: "from-purple-400 to-indigo-500"
     },
     {
