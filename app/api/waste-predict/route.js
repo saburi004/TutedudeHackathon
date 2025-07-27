@@ -116,6 +116,16 @@ Raw Material: [Name]
 Quantity to Order: [Amount + Unit]  
 Reason: [Short reason for the quantity to be ordered]
 
+Remember your main aim is to avoid wastage of food  for that purpose only we are using you so dont disappoint we should see some amazing result through you and we should reduce wastage of food. take into consideration that the same amount of food will not be consumed , it can be high at the weekends while low at the week days , you need to predict accurately that how was the trend going on and how we can help the seller to bring the amount of raw material based on his sales so that food will be saved and perfectly consumed.I am counting on you.
+Our primary goal is to eliminate food wastage by enabling intelligent and data-driven raw material planning. You are being deployed to analyze past consumption trends, taking into account fluctuating patterns like higher weekend demand and lower weekday usage. Your predictions must be accurate, adaptive, and seller-centric, ensuring that raw materials are ordered in just the right quantities—not more, not less.
+
+Every recommendation you make should contribute to the bigger mission:
+🥘 Zero Waste. Maximum Efficiency. Responsible Consumption.
+
+Sellers are counting on you to prevent overstocking and underutilization. This isn't just about saving food—it's about building a sustainable future where every resource is respected and optimized. Let your insights be precise, reliable, and impactful.
+
+Try to add emojis based on the food items 
+
 ---`;
 
   sales.forEach((sale) => {

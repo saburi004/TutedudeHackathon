@@ -1,7 +1,15 @@
-'use client';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { FaWhatsapp, FaShoppingBasket, FaHome, FaUtensils, FaUser, FaCog, FaStore } from 'react-icons/fa';
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  FaWhatsapp,
+  FaShoppingBasket,
+  FaHome,
+  FaUtensils,
+  FaUser,
+  FaCog,
+  FaStore,
+} from "react-icons/fa";
 
 const DashboardLayout = ({ children }) => {
   const pathname = usePathname();
@@ -21,29 +29,47 @@ const DashboardLayout = ({ children }) => {
           <ul className="space-y-2">
             <li>
               <Link href="/buyerdashboard" passHref>
-                <div className={`flex items-center p-3 rounded-lg cursor-pointer ${pathname === '/buyerdashboard' ? 'bg-[#086477]' : 'hover:bg-[#14919B]'}`}>
+                <div
+                  className={`flex items-center p-3 rounded-lg cursor-pointer ${
+                    pathname === "/buyerdashboard"
+                      ? "bg-[#086477]"
+                      : "hover:bg-[#14919B]"
+                  }`}
+                >
                   <FaHome className="mr-3" /> Dashboard
                 </div>
               </Link>
             </li>
             <li>
               <Link href="/buyerdashboard/buyitems" passHref>
-                <div className={`flex items-center p-3 rounded-lg cursor-pointer ${pathname === '/buyerdashboard/buyitems' ? 'bg-[#086477]' : 'hover:bg-[#14919B]'}`}>
+                <div
+                  className={`flex items-center p-3 rounded-lg cursor-pointer ${
+                    pathname === "/buyerdashboard/buyitems"
+                      ? "bg-[#086477]"
+                      : "hover:bg-[#14919B]"
+                  }`}
+                >
                   <FaShoppingBasket className="mr-3" /> Buy Items
                 </div>
               </Link>
             </li>
             <li>
-              <Link href="/dashboard/sellers" passHref>
-                <div className={`flex items-center p-3 rounded-lg cursor-pointer ${pathname === '/buyerdashboard/sellers' ? 'bg-[#086477]' : 'hover:bg-[#14919B]'}`}>
-                  <FaStore className="mr-3" /> Sellers
+              <Link href="/buyerdashboard/suggestions" passHref>
+                <div
+                  className={`flex items-center p-3 rounded-lg cursor-pointer ${
+                    pathname === "/buyerdashboard/sellers"
+                      ? "bg-[#086477]"
+                      : "hover:bg-[#14919B]"
+                  }`}
+                >
+                  <FaStore className="mr-3" /> Suggestions
                 </div>
               </Link>
             </li>
             <li>
-              <a 
-                href="https://wa.me/yourwhatsappgroup" 
-                target="_blank" 
+              <a
+                href="https://wa.me/yourwhatsappgroup"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center p-3 rounded-lg cursor-pointer hover:bg-[#14919B]"
               >
@@ -57,14 +83,26 @@ const DashboardLayout = ({ children }) => {
           <ul className="space-y-2">
             <li>
               <Link href="/buyerdashboard/profile" passHref>
-                <div className={`flex items-center p-3 rounded-lg cursor-pointer ${pathname === '/buyerdashboard/profile' ? 'bg-[#086477]' : 'hover:bg-[#14919B]'}`}>
+                <div
+                  className={`flex items-center p-3 rounded-lg cursor-pointer ${
+                    pathname === "/buyerdashboard/profile"
+                      ? "bg-[#086477]"
+                      : "hover:bg-[#14919B]"
+                  }`}
+                >
                   <FaUser className="mr-3" /> Profile
                 </div>
               </Link>
             </li>
             <li>
               <Link href="/buyerdashboard/settings" passHref>
-                <div className={`flex items-center p-3 rounded-lg cursor-pointer ${pathname === '/buyerdashboard/settings' ? 'bg-[#086477]' : 'hover:bg-[#14919B]'}`}>
+                <div
+                  className={`flex items-center p-3 rounded-lg cursor-pointer ${
+                    pathname === "/buyerdashboard/settings"
+                      ? "bg-[#086477]"
+                      : "hover:bg-[#14919B]"
+                  }`}
+                >
                   <FaCog className="mr-3" /> Settings
                 </div>
               </Link>
@@ -74,9 +112,7 @@ const DashboardLayout = ({ children }) => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto p-8">
-        {children}
-      </div>
+      <div className="flex-1 overflow-auto p-8">{children}</div>
     </div>
   );
 };
