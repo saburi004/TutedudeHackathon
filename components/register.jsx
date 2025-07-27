@@ -56,7 +56,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function Register() {
-  const [role, setRole] = useState("seller");
+  const [role, setRole] = useState("buyer");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
