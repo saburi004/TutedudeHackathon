@@ -41,8 +41,8 @@ const SupplyChainLanding = () => {
     },
     {
       icon: Store,
-      title: "Vendor Support",
-      description: "Dedicated support team helping street vendors grow their business with expert guidance.",
+      title: "Community and support",
+      description: "Dedicated support team helping street vendors grow their business",
       color: "from-orange-400 to-red-500"
     }
   ];
