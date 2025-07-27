@@ -1,6 +1,16 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import { FaStar, FaShoppingCart, FaSearch, FaMapMarkerAlt, FaEnvelope, FaPhone, FaArrowLeft, FaUser, FaCheckCircle } from 'react-icons/fa';
+"use client";
+import React, { useState, useEffect } from "react";
+import {
+  FaStar,
+  FaShoppingCart,
+  FaSearch,
+  FaMapMarkerAlt,
+  FaEnvelope,
+  FaPhone,
+  FaArrowLeft,
+  FaUser,
+  FaCheckCircle,
+} from "react-icons/fa";
 
 // Seller Details Component
 const SellerDetails = ({ seller, onBack }) => {
@@ -8,7 +18,7 @@ const SellerDetails = ({ seller, onBack }) => {
     <div className="max-w-4xl mx-auto p-6">
       {/* Header with Back Button */}
       <div className="flex items-center mb-6">
-        <button 
+        <button
           onClick={onBack}
           className="flex items-center gap-2 text-[#086477] hover:text-[#213A57] font-medium transition-colors"
         >
@@ -39,7 +49,9 @@ const SellerDetails = ({ seller, onBack }) => {
                   {seller.Verified && (
                     <div className="flex items-center gap-1 bg-green-500 px-3 py-1 rounded-full">
                       <FaCheckCircle className="text-sm" />
-                      <span className="text-sm font-medium">Verified Seller</span>
+                      <span className="text-sm font-medium">
+                        Verified Seller
+                      </span>
                     </div>
                   )}
                 </div>
@@ -55,13 +67,12 @@ const SellerDetails = ({ seller, onBack }) => {
         {/* Details Section */}
         <div className="p-8">
           <div className="grid md:grid-cols-2 gap-8">
-            
             {/* Contact Information */}
             <div className="space-y-6">
               <h2 className="text-xl font-semibold text-[#213A57] border-b border-[#45DFB1] pb-2">
                 Contact Information
               </h2>
-              
+
               <div className="space-y-4">
                 {seller.Email && (
                   <div className="flex items-center gap-3 p-4 bg-[#f0fffe] rounded-lg border border-[#45DFB1]">
@@ -70,7 +81,7 @@ const SellerDetails = ({ seller, onBack }) => {
                     </div>
                     <div>
                       <div className="text-sm text-gray-600">Email Address</div>
-                      <a 
+                      <a
                         href={`mailto:${seller.Email}`}
                         className="text-[#086477] font-medium hover:underline"
                       >
@@ -87,7 +98,7 @@ const SellerDetails = ({ seller, onBack }) => {
                     </div>
                     <div>
                       <div className="text-sm text-gray-600">Mobile Number</div>
-                      <a 
+                      <a
                         href={`tel:${seller.Mobile}`}
                         className="text-[#086477] font-medium hover:underline"
                       >
@@ -116,7 +127,7 @@ const SellerDetails = ({ seller, onBack }) => {
               <h2 className="text-xl font-semibold text-[#213A57] border-b border-[#45DFB1] pb-2">
                 Seller Details
               </h2>
-              
+
               <div className="space-y-4">
                 <div className="bg-gradient-to-r from-[#80ED99] to-[#45DFB1] p-6 rounded-lg text-white">
                   <div className="text-sm opacity-90">Overall Rating</div>
@@ -138,7 +149,9 @@ const SellerDetails = ({ seller, onBack }) => {
 
                 {seller.Distance_km !== undefined && (
                   <div className="bg-[#f8f9fa] p-4 rounded-lg border border-[#e9ecef]">
-                    <div className="text-sm text-gray-600">Distance from You</div>
+                    <div className="text-sm text-gray-600">
+                      Distance from You
+                    </div>
                     <div className="text-xl font-semibold text-[#213A57]">
                       {seller.Distance_km.toFixed(2)} km
                     </div>
@@ -164,7 +177,7 @@ const SellerDetails = ({ seller, onBack }) => {
           <div className="mt-8 pt-6 border-t border-[#45DFB1]">
             <div className="flex gap-4 justify-center">
               {seller.Email && (
-                <a 
+                <a
                   href={`mailto:${seller.Email}`}
                   className="bg-[#0AD1C8] hover:bg-[#086477] text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
                 >
@@ -172,7 +185,7 @@ const SellerDetails = ({ seller, onBack }) => {
                 </a>
               )}
               {seller.Mobile && (
-                <a 
+                <a
                   href={`tel:${seller.Mobile}`}
                   className="bg-[#80ED99] hover:bg-[#45DFB1] text-[#213A57] px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
                 >
@@ -204,10 +217,12 @@ const BuyItems = () => {
       try {
         setInitialLoading(true);
         setError(null);
-        
+
         // Load available products for suggestions
         try {
-          const productsResponse = await fetch("https://clustering-model.onrender.com/api/get-products");
+          const productsResponse = await fetch(
+            "https://clustering-model.onrender.com/api/get-products"
+          );
           if (productsResponse.ok) {
             const productsData = await productsResponse.json();
             console.log("Products response:", productsData);
@@ -223,20 +238,24 @@ const BuyItems = () => {
 
         // Load initial sellers
         try {
-          const sellersResponse = await fetch("https://clustering-model.onrender.com/api/get-initial-sellers");
+          const sellersResponse = await fetch(
+            "https://clustering-model.onrender.com/api/get-initial-sellers"
+          );
           console.log("Sellers response status:", sellersResponse.status);
-          
+
           if (sellersResponse.ok) {
             const sellersData = await sellersResponse.json();
             console.log("Sellers data:", sellersData);
-            
+
             if (sellersData.status === "success") {
               const sellersArray = sellersData.sellers || [];
               console.log("Setting sellers:", sellersArray);
               setSellers(sellersArray);
-              
+
               if (sellersArray.length === 0) {
-                setError("No sellers available in the database. Please add some sellers first.");
+                setError(
+                  "No sellers available in the database. Please add some sellers first."
+                );
               }
             } else {
               setError(sellersData.message || "Failed to load sellers");
@@ -250,7 +269,6 @@ const BuyItems = () => {
           console.error("Error loading sellers:", err);
           setError(`Network error: ${err.message}`);
         }
-        
       } catch (err) {
         console.error("Error loading initial data:", err);
         setError("Failed to load initial data. Please refresh the page.");
@@ -263,7 +281,7 @@ const BuyItems = () => {
   }, []);
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSearchSellers();
     }
   };
@@ -272,7 +290,7 @@ const BuyItems = () => {
     const value = e.target.value;
     setSearchQuery(value);
     setShowSuggestions(value.length > 0);
-    
+
     // Clear previous error when user starts typing
     if (error && value.trim()) {
       setError(null);
@@ -286,9 +304,9 @@ const BuyItems = () => {
 
   const getFilteredSuggestions = () => {
     if (!searchQuery || !availableProducts.length) return [];
-    
+
     return availableProducts
-      .filter(product => 
+      .filter((product) =>
         product.toLowerCase().includes(searchQuery.toLowerCase())
       )
       .slice(0, 5);
@@ -334,7 +352,11 @@ const BuyItems = () => {
 
           if (!response.ok) {
             const errorBody = await response.text();
-            console.error("Backend error response:", response.status, errorBody);
+            console.error(
+              "Backend error response:",
+              response.status,
+              errorBody
+            );
             throw new Error(`Network response was not ok: ${response.status}`);
           }
 
@@ -358,15 +380,17 @@ const BuyItems = () => {
       },
       (error) => {
         console.error("Geolocation error:", error);
-        setError("Location access denied or unavailable. Showing general results.");
-        
+        setError(
+          "Location access denied or unavailable. Showing general results."
+        );
+
         // Fallback: search without location
         searchWithoutLocation();
       },
       {
         enableHighAccuracy: true,
         timeout: 10000,
-        maximumAge: 600000
+        maximumAge: 600000,
       }
     );
   };
@@ -403,16 +427,16 @@ const BuyItems = () => {
     setHasSearched(false);
     setError(null);
     setInitialLoading(true);
-    
+
     // Reload initial sellers
     fetch("https://clustering-model.onrender.com/api/get-initial-sellers")
-      .then(response => response.json())
-      .then(data => {
+      .then((response) => response.json())
+      .then((data) => {
         if (data.status === "success") {
           setSellers(data.sellers || []);
         }
       })
-      .catch(err => {
+      .catch((err) => {
         console.error("Error reloading initial sellers:", err);
         setError("Failed to reload sellers");
       })
@@ -452,23 +476,27 @@ const BuyItems = () => {
       <h1 className="text-3xl font-bold text-[#213A57] mb-6 flex items-center">
         <FaShoppingCart className="mr-2" /> Buy Food Items
       </h1>
-      
+
       {/* Debug Info */}
       {/* { process.env.NODE_ENV === 'development' && (
         <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg mb-6">
           <strong>Debug:</strong> Found {sellers.length} sellers | Products: {availableProducts.length}
         </div>
       )} */}
-      
+
       {/* Search Section */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-6 border border-[#45DFB1]">
         <div className="mb-4">
-          <label htmlFor="product-search" className="block text-sm font-medium text-[#213A57] mb-2">
+          <label
+            htmlFor="product-search"
+            className="block text-sm font-medium text-[#213A57] mb-2"
+          >
             Search for a specific product:
           </label>
           <div className="flex gap-3 items-center">
             <div className="flex-1 relative">
               <input
+                style={{ color: "black" }}
                 id="product-search"
                 type="text"
                 value={searchQuery}
@@ -477,9 +505,9 @@ const BuyItems = () => {
                 onFocus={() => setShowSuggestions(searchQuery.length > 0)}
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                 placeholder="e.g., Potatoes, Tomatoes, Rice, Milk..."
-                className="w-full px-4 py-3 border-2 border-[#45DFB1] rounded-lg focus:outline-none focus:border-[#0AD1C8] transition-colors"
+                className="w-full text-black px-4 py-3 border-2 border-[#45DFB1] rounded-lg focus:outline-none focus:border-[#0AD1C8] transition-colors"
               />
-              
+
               {showSuggestions && getFilteredSuggestions().length > 0 && (
                 <div className="absolute top-full left-0 right-0 bg-white border border-[#45DFB1] border-t-0 rounded-b-lg max-h-48 overflow-y-auto z-50 shadow-lg">
                   {getFilteredSuggestions().map((product, index) => (
@@ -494,8 +522,8 @@ const BuyItems = () => {
                 </div>
               )}
             </div>
-            
-            <button 
+
+            <button
               onClick={handleSearchSellers}
               disabled={loading || !searchQuery.trim()}
               className="px-6 py-3 bg-[#0AD1C8] hover:bg-[#086477] disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
@@ -503,9 +531,9 @@ const BuyItems = () => {
               <FaSearch />
               {loading ? "Searching..." : "Find Sellers"}
             </button>
-            
+
             {hasSearched && (
-              <button 
+              <button
                 onClick={resetToInitialState}
                 className="px-4 py-3 bg-[#14919B] hover:bg-[#213A57] text-white rounded-lg font-medium transition-colors"
               >
@@ -513,12 +541,12 @@ const BuyItems = () => {
               </button>
             )}
           </div>
-          
+
           <p className="text-sm text-gray-600 mt-2">
-            💡 {hasSearched ? 
-              "Showing search results. Click 'Show All' to see all available sellers." : 
-              "Start typing to see product suggestions, or browse all available sellers below."
-            }
+            💡{" "}
+            {hasSearched
+              ? "Showing search results. Click 'Show All' to see all available sellers."
+              : "Start typing to see product suggestions, or browse all available sellers below."}
           </p>
         </div>
       </div>
@@ -542,10 +570,9 @@ const BuyItems = () => {
       {!loading && (
         <div className="mb-4">
           <h2 className="text-xl font-semibold text-[#213A57]">
-            {hasSearched ? 
-              `Search Results for "${searchQuery}" (${sellers.length} found)` : 
-              `Available Sellers (${sellers.length})`
-            }
+            {hasSearched
+              ? `Search Results for "${searchQuery}" (${sellers.length} found)`
+              : `Available Sellers (${sellers.length})`}
           </h2>
         </div>
       )}
@@ -556,19 +583,24 @@ const BuyItems = () => {
           {sellers.map((seller, index) => {
             // Add safe defaults for missing fields
             const safeRating = seller.Rating || 0;
-            const safeName = seller.Name || `Seller ${seller.Seller_ID || index + 1}`;
+            const safeName =
+              seller.Name || `Seller ${seller.Seller_ID || index + 1}`;
             const safeLocation = seller.Locality || "Location not specified";
             const safePrice = seller.Price_per_kg || null;
             const safeDistance = seller.Distance_km || null;
             const safeScore = seller.Score || null;
-            const isVerified = seller.Verified === true || seller.Verified === 1 || seller.Verified === "true";
-            
+            const isVerified =
+              seller.Verified === true ||
+              seller.Verified === 1 ||
+              seller.Verified === "true";
+
             return (
-              <div key={`seller-${seller.Seller_ID || index}`} className="bg-white rounded-lg shadow-md overflow-hidden border border-[#45DFB1] hover:shadow-lg transition-shadow">
+              <div
+                key={`seller-${seller.Seller_ID || index}`}
+                className="bg-white rounded-lg shadow-md overflow-hidden border border-[#45DFB1] hover:shadow-lg transition-shadow"
+              >
                 <div className="bg-[#14919B] p-4 text-white">
-                  <h3 className="text-xl font-semibold truncate">
-                    {safeName}
-                  </h3>
+                  <h3 className="text-xl font-semibold truncate">{safeName}</h3>
                   <div className="flex items-center justify-between mt-2">
                     <div className="flex items-center">
                       <FaStar className="text-yellow-300 mr-1" />
@@ -581,30 +613,34 @@ const BuyItems = () => {
                     )}
                   </div>
                 </div>
-                
+
                 <div className="p-4">
                   <div className="space-y-3">
                     <div className="flex items-center text-sm text-gray-600">
                       <FaMapMarkerAlt className="mr-2 text-[#0AD1C8] flex-shrink-0" />
                       <span className="truncate">{safeLocation}</span>
                     </div>
-                    
+
                     {safeDistance !== null && (
                       <div className="text-sm">
-                        <strong className="text-[#086477]">Distance:</strong> {safeDistance.toFixed(2)} km
+                        <strong className="text-[#086477]">Distance:</strong>{" "}
+                        {safeDistance.toFixed(2)} km
                       </div>
                     )}
-                    
+
                     {safePrice !== null && (
                       <div className="text-sm">
-                        <strong className="text-[#086477]">Price:</strong> 
-                        <span className="text-[#0AD1C8] font-bold ml-1">₹{safePrice.toFixed(2)}/kg</span>
+                        <strong className="text-[#086477]">Price:</strong>
+                        <span className="text-[#0AD1C8] font-bold ml-1">
+                          ₹{safePrice.toFixed(2)}/kg
+                        </span>
                       </div>
                     )}
-                    
+
                     {safeScore !== null && (
                       <div className="text-sm">
-                        <strong className="text-[#086477]">Score:</strong> {safeScore.toFixed(3)}
+                        <strong className="text-[#086477]">Score:</strong>{" "}
+                        {safeScore.toFixed(3)}
                       </div>
                     )}
 
@@ -613,9 +649,9 @@ const BuyItems = () => {
                       ID: {seller.Seller_ID || `temp-${index}`}
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-2 mt-4">
-                    <button 
+                    <button
                       onClick={() => handleViewDetails(seller)}
                       className="flex-1 bg-[#0AD1C8] hover:bg-[#086477] text-white py-2 px-4 rounded-lg transition-colors font-medium"
                     >
@@ -633,12 +669,13 @@ const BuyItems = () => {
       {!loading && sellers.length === 0 && !error && (
         <div className="text-center py-12">
           <div className="text-gray-400 text-6xl mb-4">🔍</div>
-          <h3 className="text-xl font-semibold text-[#213A57] mb-2">No sellers found</h3>
+          <h3 className="text-xl font-semibold text-[#213A57] mb-2">
+            No sellers found
+          </h3>
           <p className="text-gray-600">
-            {hasSearched ? 
-              "Try searching for a different product or check your spelling." : 
-              "No sellers are currently available. Please try again later."
-            }
+            {hasSearched
+              ? "Try searching for a different product or check your spelling."
+              : "No sellers are currently available. Please try again later."}
           </p>
         </div>
       )}
