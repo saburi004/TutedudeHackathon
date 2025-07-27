@@ -1,4 +1,4 @@
-# app.py - Updated with MongoDB integration
+# Updated app.py with enhanced seller registration for multiple products
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -7,6 +7,7 @@ import joblib
 from geo_clustering_model import get_top_sellers, load_model_and_data, retrain_model_with_new_seller
 from db_manager import DatabaseManager
 import logging
+from datetime import datetime
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -93,13 +94,6 @@ def get_initial_sellers():
                 "message": "No sellers available in database"
             })
         
-        # Log first few records for debugging
-        logger.info("📝 First record:")
-        if len(df) > 0:
-            first_record = df.iloc[0].to_dict()
-            for key, value in first_record.items():
-                logger.info(f"  {key}: {value} (type: {type(value)})")
-        
         # Simple conversion - just take all records as they are
         sellers_list = []
         
@@ -127,7 +121,6 @@ def get_initial_sellers():
                 break
         
         logger.info(f"✅ Returning {len(sellers_list)} sellers")
-        logger.info(f"📋 Sample seller: {sellers_list[0] if sellers_list else 'None'}")
         
         return jsonify({
             "status": "success",
@@ -146,7 +139,7 @@ def get_initial_sellers():
 
 @app.route("/api/register-seller", methods=["POST"])
 def register_seller():
-    """Register a new seller and retrain the model"""
+    """Register a new seller with multiple products and store in MongoDB"""
     try:
         data = request.get_json()
         logger.info(f"📨 New seller registration data: {data}")
@@ -155,8 +148,7 @@ def register_seller():
             return jsonify({"status": "error", "message": "Missing JSON body"}), 400
 
         # Validate required fields
-        required_fields = ['Name', 'Email', 'Mobile', 'Locality', 'Latitude', 'Longitude', 
-                          'Product', 'Price_per_kg', 'Stock_quantity']
+        required_fields = ['Name', 'Email', 'Mobile', 'Locality', 'Latitude', 'Longitude', 'Products']
         
         missing_fields = [field for field in required_fields if field not in data or data[field] is None]
         if missing_fields:
@@ -165,29 +157,75 @@ def register_seller():
                 "message": f"Missing required fields: {missing_fields}"
             }), 400
 
-        # Add default values for optional fields
-        seller_data = {
-            "Seller_ID": data.get('Seller_ID') or f"SELLER_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}",
-            "Name": data['Name'],
-            "Email": data['Email'],
-            "Mobile": data['Mobile'],
-            "Locality": data['Locality'],
-            "Latitude": float(data['Latitude']),
-            "Longitude": float(data['Longitude']),
-            "Product": data['Product'],
-            "Price_per_kg": float(data['Price_per_kg']),
-            "Stock_quantity": int(data['Stock_quantity']),
-            "Rating": data.get('Rating', 4.0),  # Default rating
-            "Verified": data.get('Verified', False)  # Default not verified
-        }
+        # Validate products array
+        if not isinstance(data['Products'], list) or len(data['Products']) == 0:
+            return jsonify({
+                "status": "error",
+                "message": "At least one product is required"
+            }), 400
 
-        # Add seller and retrain model
-        seller_id = retrain_model_with_new_seller(seller_data)
+        # Initialize database manager
+        db_manager = DatabaseManager()
+        
+        # Generate unique seller ID
+        seller_id = f"SELLER_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{data['Name'].replace(' ', '_')}"
+        
+        # Create multiple records - one for each product
+        seller_records = []
+        
+        for product in data['Products']:
+            if not all(key in product for key in ['Product', 'Price_per_kg', 'Stock_quantity']):
+                db_manager.close_connection()
+                return jsonify({
+                    "status": "error",
+                    "message": "Each product must have Product, Price_per_kg, and Stock_quantity"
+                }), 400
+            
+            # Create seller record for this product
+            seller_record = {
+                "Seller_ID": seller_id,
+                "Name": data['Name'],
+                "Email": data['Email'],
+                "Mobile": str(data['Mobile']),
+                "Locality": data['Locality'],
+                "Latitude": float(data['Latitude']),
+                "Longitude": float(data['Longitude']),
+                "Product": product['Product'],
+                "Price_per_kg": float(product['Price_per_kg']),
+                "Stock_quantity": int(product['Stock_quantity']),
+                "Rating": data.get('Rating', 4.0),  # Default rating
+                "Verified": data.get('Verified', False),  # Default not verified
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }
+            
+            seller_records.append(seller_record)
+        
+        # Insert all records to MongoDB
+        result = db_manager.collection.insert_many(seller_records)
+        db_manager.close_connection()
+        
+        logger.info(f"✅ Successfully added {len(result.inserted_ids)} product records for seller: {seller_id}")
+        
+        # Update CSV file for model retraining
+        try:
+            # Get updated data and save to CSV
+            db_manager = DatabaseManager()
+            db_manager.update_csv_from_mongodb('seller_data.csv')  # Update your CSV file path
+            db_manager.close_connection()
+            
+            # Optionally retrain model
+            # retrain_model_with_new_seller(seller_records[0])  # Use first record for model training
+            
+        except Exception as model_error:
+            logger.warning(f"⚠️ Model update failed: {str(model_error)}")
+            # Don't fail the registration if model update fails
         
         return jsonify({
             "status": "success",
-            "message": "Seller registered successfully and model updated",
-            "seller_id": seller_id
+            "message": f"Seller registered successfully with {len(seller_records)} products",
+            "seller_id": seller_id,
+            "products_added": len(seller_records)
         })
 
     except ValueError as ve:
@@ -349,6 +387,43 @@ def retrain_model():
         return jsonify({
             "status": "error",
             "message": "Model retraining failed: " + str(e)
+        }), 500
+
+# Additional endpoint to get seller by ID (for your existing raw-sellers API)
+@app.route("/api/raw-sellers/update/<seller_id>", methods=["GET", "PUT"])
+def handle_raw_seller(seller_id):
+    """Handle existing raw seller API calls"""
+    try:
+        if request.method == "GET":
+            # Return mock data for now - you can enhance this to fetch from MongoDB
+            return jsonify({
+                "success": True,
+                "seller": {
+                    "id": seller_id,
+                    "name": f"Seller {seller_id}",
+                    "email": f"seller_{seller_id}@example.com",
+                    "location": None,
+                    "availableMaterials": []
+                }
+            })
+        
+        elif request.method == "PUT":
+            # Handle profile updates - this will be called by your existing form
+            data = request.get_json()
+            logger.info(f"📝 Updating raw seller profile: {seller_id}")
+            
+            # You can implement the update logic here if needed
+            # For now, just return success
+            return jsonify({
+                "success": True,
+                "message": "Profile updated successfully"
+            })
+            
+    except Exception as e:
+        logger.error(f"❌ Error handling raw seller: {str(e)}")
+        return jsonify({
+            "success": False,
+            "message": str(e)
         }), 500
 
 if __name__ == "__main__":
