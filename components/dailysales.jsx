@@ -71,12 +71,7 @@ const SalesForm = () => {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-6 py-8"
-      style={{
-        background: `linear-gradient(to right, ${COLORS.dark}, ${COLORS.green})`,
-      }}
-    >
+    <div className="min-h-screen flex items-center justify-center px-6 py-8">
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-6 space-y-6"
@@ -94,7 +89,7 @@ const SalesForm = () => {
               type="text"
               value={item.itemName}
               onChange={(e) => handleChange(index, "itemName", e.target.value)}
-              className="w-full px-3 py-2 rounded-md border focus:outline-none"
+              className="w-full px-3 py-2 rounded-md border focus:outline-none text-black"
               required
             />
 
@@ -109,7 +104,7 @@ const SalesForm = () => {
                   onChange={(e) =>
                     handleChange(index, "quantityPrepared", e.target.value)
                   }
-                  className="w-full px-3 py-2 rounded-md border focus:outline-none"
+                  className="w-full px-3 py-2 rounded-md border focus:outline-none text-black"
                   required
                 />
               </div>
@@ -123,7 +118,7 @@ const SalesForm = () => {
                   onChange={(e) =>
                     handleChange(index, "quantitySold", e.target.value)
                   }
-                  className="w-full px-3 py-2 rounded-md border focus:outline-none"
+                  className="w-full px-3 py-2 rounded-md border focus:outline-none text-black"
                   required
                 />
               </div>

@@ -60,13 +60,37 @@ const WastePrediction = () => {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-center mb-6">
+      <h1 className="text-2xl text-black font-bold text-center mb-6">
         Waste Prediction Report
       </h1>
 
       {error && <p className="text-red-600 font-semibold mb-4">{error}</p>}
       {loading && !error && (
-        <p className="text-gray-500">Fetching prediction...</p>
+        <div className="flex items-center space-x-3 text-gray-600">
+          <svg
+            className="animate-spin h-5 w-5 text-blue-500"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v8z"
+            ></path>
+          </svg>
+          <p className="text-sm font-medium">
+            Hang tight! This may take a minute...
+          </p>
+        </div>
       )}
 
       {!error && !loading && (
