@@ -4,6 +4,42 @@ import { FaStar, FaShoppingCart, FaSearch, FaMapMarkerAlt, FaEnvelope, FaPhone, 
 
 // Seller Details Component
 const SellerDetails = ({ seller, onBack }) => {
+  // Debug: Log all seller properties to console
+  console.log("Seller object in details:", seller);
+  console.log("All available keys:", Object.keys(seller));
+
+  // Helper function to get email from various possible field names
+  const getEmail = (seller) => {
+    const possibleEmailFields = ['Email', 'email', 'Email_Address', 'email_address', 'emailAddress', 'EMAIL', 'contact_email', 'contactEmail'];
+    for (const field of possibleEmailFields) {
+      if (seller[field] && seller[field].trim()) {
+        console.log(`Found email in field: ${field} = ${seller[field]}`);
+        return seller[field];
+      }
+    }
+    console.log("No email field found");
+    return null;
+  };
+
+  // Helper function to get mobile from various possible field names
+  const getMobile = (seller) => {
+    const possibleMobileFields = ['Mobile', 'mobile', 'Phone', 'phone', 'Mobile_Number', 'mobile_number', 'mobileNumber', 'phoneNumber', 'MOBILE', 'PHONE', 'contact_mobile', 'contactMobile', 'contact_phone', 'contactPhone'];
+    for (const field of possibleMobileFields) {
+      if (seller[field] && seller[field].toString().trim()) {
+        console.log(`Found mobile in field: ${field} = ${seller[field]}`);
+        return seller[field];
+      }
+    }
+    console.log("No mobile field found");
+    return null;
+  };
+
+  const email = getEmail(seller);
+  const mobile = getMobile(seller);
+
+  console.log("Final email:", email);
+  console.log("Final mobile:", mobile);
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       {/* Header with Back Button */}
@@ -63,7 +99,7 @@ const SellerDetails = ({ seller, onBack }) => {
               </h2>
               
               <div className="space-y-4">
-                {seller.Email && (
+                {email && (
                   <div className="flex items-center gap-3 p-4 bg-[#f0fffe] rounded-lg border border-[#45DFB1]">
                     <div className="bg-[#0AD1C8] p-2 rounded-full text-white">
                       <FaEnvelope />
@@ -71,16 +107,16 @@ const SellerDetails = ({ seller, onBack }) => {
                     <div>
                       <div className="text-sm text-gray-600">Email Address</div>
                       <a 
-                        href={`mailto:${seller.Email}`}
+                        href={`mailto:${email}`}
                         className="text-[#086477] font-medium hover:underline"
                       >
-                        {seller.Email}
+                        {email}
                       </a>
                     </div>
                   </div>
                 )}
 
-                {seller.Mobile && (
+                {mobile && (
                   <div className="flex items-center gap-3 p-4 bg-[#f0fffe] rounded-lg border border-[#45DFB1]">
                     <div className="bg-[#0AD1C8] p-2 rounded-full text-white">
                       <FaPhone />
@@ -88,11 +124,19 @@ const SellerDetails = ({ seller, onBack }) => {
                     <div>
                       <div className="text-sm text-gray-600">Mobile Number</div>
                       <a 
-                        href={`tel:${seller.Mobile}`}
+                        href={`tel:${mobile}`}
                         className="text-[#086477] font-medium hover:underline"
                       >
-                        {seller.Mobile}
+                        {mobile}
                       </a>
+                    </div>
+                  </div>
+                )}
+
+                {!email && !mobile && (
+                  <div className="flex items-center gap-3 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <div className="text-yellow-600">
+                      ⚠️ Contact information not available for this seller
                     </div>
                   </div>
                 )}
@@ -163,21 +207,26 @@ const SellerDetails = ({ seller, onBack }) => {
           {/* Action Buttons */}
           <div className="mt-8 pt-6 border-t border-[#45DFB1]">
             <div className="flex gap-4 justify-center">
-              {seller.Email && (
+              {email && (
                 <a 
-                  href={`mailto:${seller.Email}`}
+                  href={`mailto:${email}`}
                   className="bg-[#0AD1C8] hover:bg-[#086477] text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
                 >
                   <FaEnvelope /> Send Email
                 </a>
               )}
-              {seller.Mobile && (
+              {mobile && (
                 <a 
-                  href={`tel:${seller.Mobile}`}
+                  href={`tel:${mobile}`}
                   className="bg-[#80ED99] hover:bg-[#45DFB1] text-[#213A57] px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
                 >
                   <FaPhone /> Call Now
                 </a>
+              )}
+              {!email && !mobile && (
+                <div className="text-center text-gray-500">
+                  Contact information not available for this seller
+                </div>
               )}
             </div>
           </div>
@@ -207,7 +256,7 @@ const BuyItems = () => {
         
         // Load available products for suggestions
         try {
-          const productsResponse = await fetch("http://localhost:5000/api/get-products");
+          const productsResponse = await fetch("https://clustering-model.onrender.com/api/get-products");
           if (productsResponse.ok) {
             const productsData = await productsResponse.json();
             console.log("Products response:", productsData);
@@ -223,7 +272,7 @@ const BuyItems = () => {
 
         // Load initial sellers
         try {
-          const sellersResponse = await fetch("http://localhost:5000/api/get-initial-sellers");
+          const sellersResponse = await fetch("https://clustering-model.onrender.com/api/get-initial-sellers");
           console.log("Sellers response status:", sellersResponse.status);
           
           if (sellersResponse.ok) {
@@ -320,7 +369,7 @@ const BuyItems = () => {
 
         try {
           const response = await fetch(
-            "http://localhost:5000/api/get-sellers",
+            "https://clustering-model.onrender.com/api/get-sellers",
             {
               method: "POST",
               headers: {
@@ -374,7 +423,7 @@ const BuyItems = () => {
   const searchWithoutLocation = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/search-sellers",
+        "https://clustering-model.onrender.com/api/search-sellers",
         {
           method: "POST",
           headers: {
@@ -405,7 +454,7 @@ const BuyItems = () => {
     setInitialLoading(true);
     
     // Reload initial sellers
-    fetch("http://localhost:5000/api/get-initial-sellers")
+    fetch("https://clustering-model.onrender.com/api/get-initial-sellers")
       .then(response => response.json())
       .then(data => {
         if (data.status === "success") {
@@ -452,13 +501,6 @@ const BuyItems = () => {
       <h1 className="text-3xl font-bold text-[#213A57] mb-6 flex items-center">
         <FaShoppingCart className="mr-2" /> Buy Food Items
       </h1>
-      
-      {/* Debug Info */}
-      {/* { process.env.NODE_ENV === 'development' && (
-        <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg mb-6">
-          <strong>Debug:</strong> Found {sellers.length} sellers | Products: {availableProducts.length}
-        </div>
-      )} */}
       
       {/* Search Section */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-6 border border-[#45DFB1]">

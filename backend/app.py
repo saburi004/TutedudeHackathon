@@ -1,5 +1,4 @@
 # Updated app.py with enhanced seller registration for multiple products
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pandas as pd
@@ -282,7 +281,9 @@ def search_sellers():
             'Locality': 'first',
             'Rating': 'mean',
             'Verified': 'first',
-            'Price_per_kg': 'mean'
+            'Price_per_kg': 'mean',
+            'Email' : 'first',
+            'Mobile' : 'first'
         }).reset_index()
         
         # Ensure no duplicates
