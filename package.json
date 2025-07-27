@@ -10,10 +10,6 @@
   },
   "dependencies": {
     "@google/genai": "^1.11.0",
-<<<<<<< HEAD
-    "@google/generative-ai": "^0.24.1",
-=======
->>>>>>> 295f968e41ad1db3c0ef91998045ebd9d9521bac
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
     "dotenv": "^17.2.1",
