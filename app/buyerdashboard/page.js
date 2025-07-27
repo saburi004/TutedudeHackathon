@@ -1,5 +1,11 @@
-import BuyItems from '@/components/buyerdashboardDefault';
+import { Suspense } from 'react';
+import BuyerDashboard from '@/components/buyerdashboardDefault';
 
-export default function BuyItemsPage() {
-  return <BuyItems />;
+
+export default function BuyerDashboardPage() {
+  return (
+    <Suspense>
+      <BuyerDashboard />
+    </Suspense>
+  );
 }
