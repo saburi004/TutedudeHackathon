@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: tutedude-nextjs-app
+    env: node
+    plan: free
+    branch: master
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_VERSION
+        value: 18.16.0
+
