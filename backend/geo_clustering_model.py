@@ -6,7 +6,7 @@ from sklearn.cluster import KMeans
 import joblib
 from pathlib import Path
 
-DATA_PATH   = Path("seller_dataset_pune.csv")  
+DATA_PATH   = Path("indian_sellers_dataset.csv")  
 MODEL_DIR   = Path("models")
 MODEL_DIR.mkdir(exist_ok=True)
 
@@ -111,6 +111,6 @@ if __name__ == "__main__":
     # lat, lon = 18.5018, 73.8586
     # product = "Potatoes"
     # scaler, kmeans, df = load_model_and_data()
-    # result = get_top_sellers(lat, lon, product, top_n=5, 
+    # result = get_top_sellers(lat, lon, product, top_n=20, 
     #                          kmeans_model=kmeans, scaler_model=scaler, full_df=df)
     # print("🔍 Top Sellers near buyer:\n", result)
