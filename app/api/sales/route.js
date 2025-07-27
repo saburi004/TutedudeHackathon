@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/dbConnect";
+// import SalesInput from "@/models/SalesInput";
 import SalesInput from "@/models/SalesInput";
+
 import jwt from "jsonwebtoken";
 
 export async function POST(req) {

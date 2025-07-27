@@ -1,5 +1,7 @@
-import Additems from '@/components/quality-checks';
 
-export default function BuyItemsPage() {
-  return <Additems />;
+
+import QualityChecksPage from '@/components/quality-checks';
+
+export default function QualityChecksRoute() {
+  return <QualityChecksPage />;
 }

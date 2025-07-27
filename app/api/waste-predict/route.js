@@ -2,6 +2,8 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
 import SalesInput from "@/models/SalesInput";
+// const SalesInput = require('../../../models/SalesInput');
+
 import { verifyJWT } from "@/middleware/auth";
 import { GoogleGenAI } from "@google/genai";
 

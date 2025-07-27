@@ -1,10 +1,10 @@
-// app/sellerdashboard/page.js
+'use client';
 import { Suspense } from 'react';
-import SellerDashboard from "@/components/sellerdashboardDefault"
+import SellerDashboard from "@/components/sellerdashboardDefault";
 
 export default function SellerDashboardPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<div>Loading...</div>}>
       <SellerDashboard />
     </Suspense>
   );

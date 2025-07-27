@@ -3,7 +3,7 @@
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { FaWhatsapp, FaShoppingBasket, FaHome, FaUtensils, FaUser, FaCog, FaStore, FaBars, FaChevronRight } from 'react-icons/fa';
+import { FaWhatsapp, FaShoppingBasket, FaHome, FaUtensils, FaUser, FaCog, FaStore, FaBars, FaChevronRight,FaCashRegister } from 'react-icons/fa';
 
 // Component that uses searchParams (must be client-side)
 function SidebarContent() {
@@ -99,10 +99,29 @@ function SidebarContent() {
                 </div>
               </Link>
             </li>
-            <li>
-              <Link href={createHref("/buyerdashboard/sellers")} passHref>
-                <div className={`flex items-center p-3 rounded-lg cursor-pointer ${pathname === '/buyerdashboard/sellers' ? 'bg-[#086477]' : 'hover:bg-[#14919B]'}`}>
+           <li>
+              <Link href="/buyerdashboard/suggestions" passHref>
+                <div
+                  className={`flex items-center p-3 rounded-lg cursor-pointer ${
+                    pathname === "/buyerdashboard/sellers"
+                      ? "bg-[#086477]"
+                      : "hover:bg-[#14919B]"
+                  }`}
+                >
                   <FaStore className="mr-3" /> Suggestions
+                </div>
+              </Link>
+            </li>
+            <li>
+              <Link href="/buyerdashboard/setsales" passHref>
+                <div
+                  className={`flex items-center p-3 rounded-lg cursor-pointer ${
+                    pathname === "/buyerdashboard/sellers"
+                      ? "bg-[#086477]"
+                      : "hover:bg-[#14919B]"
+                  }`}
+                >
+                  <FaCashRegister className="mr-3" /> Enter Sales
                 </div>
               </Link>
             </li>
