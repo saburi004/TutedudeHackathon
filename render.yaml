@@ -10,3 +10,9 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 20.10.0
+      - key: MONGO_URI
+        value: mongodb+srv://shubhampaikrao610:7TgPN6uggpqefeV8@cluster0.wexg1kr.mongodb.net/swaadai_db?retryWrites=true&w=majority&appName=Cluster0
+      - key: JWT_SECRET
+        value: mysecretkey
+      - key: GEMINI_API_KEY
+        value: AIzaSyBqqBcP3kdbtbn0nqUBm-NO_hWIIVhrv24
