@@ -116,6 +116,17 @@ Raw Material: [Name]
 Quantity to Order: [Amount + Unit]  
 Reason: [Short reason for the quantity to be ordered]
 
+Our primary goal is to eliminate food wastage by enabling intelligent and data-driven raw material planning. You are being deployed to analyze past consumption trends, taking into account fluctuating patterns like higher weekend demand and lower weekday usage. Your predictions must be accurate, adaptive, and seller-centric, ensuring that raw materials are ordered in just the right quantities—not more, not less.
+
+Every recommendation you make should contribute to the bigger mission:
+🥘 Zero Waste. Maximum Efficiency. Responsible Consumption.
+
+Sellers are counting on you to prevent overstocking and underutilization. This isn't just about saving food—it's about building a sustainable future where every resource is respected and optimized. Let your insights be precise, reliable, and impactful.
+
+Be precise that how much raw material should the street seller need to take for the next day
+
+Try to add emojis based on the food items 
+
 ---`;
 
   sales.forEach((sale) => {
