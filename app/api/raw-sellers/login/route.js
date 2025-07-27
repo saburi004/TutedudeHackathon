@@ -1,16 +1,17 @@
-// api/street-sellers/login
 import connectDB from "@/lib/dbConnect";
 import RawMaterialSeller from "@/models/RawMaterialSeller";
 import bcrypt from "bcryptjs";
-import generateToken from "@/lib/generateToken";
+import generateToken from "@/lib/generateToken"; // adjust this import as per your setup
 
 export async function POST(req) {
   try {
     await connectDB();
-    const body = await req.json();
-    const { email, password } = body;
 
-    const user = await RawMaterialSeller.findOne({ email });
+    const { email, password } = await req.json();
+
+    // ✅ Corrected contact.email path
+    const user = await RawMaterialSeller.findOne({ "contact.email": email });
+
     if (!user) {
       return Response.json(
         { error: "Invalid email or password" },
@@ -26,7 +27,7 @@ export async function POST(req) {
       );
     }
 
-    const token = generateToken(user._id);
+    const token = generateToken(user._id); // or use your JWT logic
 
     return Response.json({
       success: true,
@@ -34,12 +35,12 @@ export async function POST(req) {
       seller: {
         id: user._id,
         name: user.name,
-        email: user.email,
-        phone: user.phone,
+        email: user.contact.email, // ✅ fixed path
+        phone: user.contact.phone, // ✅ fixed path
       },
     });
   } catch (error) {
-    console.error("RawSeller Login Error:", error);
-    return Response.json({ error: "Server error" }, { status: 500 });
+    console.error("Login Error:", error);
+    return Response.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

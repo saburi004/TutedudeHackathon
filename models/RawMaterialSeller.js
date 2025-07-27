@@ -1,9 +1,11 @@
 // /models/RawMaterialSeller.js
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const RawMaterialSellerSchema = new mongoose.Schema({
-sellerId: { type: String, unique: true, sparse: true },
+  sellerId: { type: String, unique: true, sparse: true },
   name: String,
+  password: { type: String, required: true },
+
   contact: {
     phone: String,
     email: String,
@@ -11,16 +13,17 @@ sellerId: { type: String, unique: true, sparse: true },
   location: {
     latitude: Number,
     longitude: Number,
-    address: String
+    address: String,
   },
   availableMaterials: [
     {
       materialId: mongoose.Schema.Types.ObjectId,
       price: Number,
-      quantityAvailable: Number
-    }
+      quantityAvailable: Number,
+    },
   ],
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default:   Date.now },
 });
 
-export default mongoose.models.RawMaterialSeller || mongoose.model("RawMaterialSeller", RawMaterialSellerSchema);
+export default mongoose.models.RawMaterialSeller ||
+  mongoose.model("RawMaterialSeller", RawMaterialSellerSchema);

@@ -1,8 +1,7 @@
-// /models/StreetSeller.js
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const StreetSellerSchema = new mongoose.Schema({
-  Id: { type: String, unique: true },
+  buyerId: { type: String, unique: true }, // _id as string
   name: String,
   email: { type: String, unique: true },
   phone: String,
@@ -10,16 +9,16 @@ const StreetSellerSchema = new mongoose.Schema({
   location: {
     latitude: Number,
     longitude: Number,
-    address: String
+    address: String,
   },
   foodItems: [String], // e.g., ["pav bhaji", "vada pav"]
   dailyInput: {
-    totalPrepared: Number, // e.g., plates
+    totalPrepared: Number,
     totalSold: Number,
-    date: { type: Date, default: Date.now }
+    date: { type: Date, default: Date.now },
   },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
 });
 
-export default mongoose.models.StreetSeller || mongoose.model("StreetSeller", StreetSellerSchema);
-// /models/StreetSeller.js
+export default mongoose.models.StreetSeller ||
+  mongoose.model("StreetSeller", StreetSellerSchema);

@@ -1,77 +1,51 @@
-// import connectDB from '@/lib/dbConnect';
-// import StreetSeller from '@/models/StreetSeller';
-// import bcrypt from 'bcryptjs';
-
-// export async function POST(req) {
-//   try {
-//     await connectDB();
-//     const body = await req.json();
-//     const { email, password, name, phone } = body;
-
-//     const existing = await StreetSeller.findOne({ email });
-//     if (existing) {
-//       return Response.json({ error: 'Email already registered' }, { status: 409 });
-//     }
-
-//     const hashedPassword = await bcrypt.hash(password, 10);
-//     const newSeller = await StreetSeller.create({
-//       email,
-//       password: hashedPassword,
-//       name,
-//       phone,
-//     });
-
-//     return Response.json({ success: true, sellerId: newSeller._id });
-//   } catch (error) {
-//     console.error('Signup Error:', error);
-//     return Response.json({ error: 'Server error' }, { status: 500 });
-//   }
-// }
 import connectDB from "@/lib/dbConnect";
 import StreetSeller from "@/models/StreetSeller";
 import bcrypt from "bcryptjs";
+import { NextResponse } from "next/server";
 
 export async function POST(req) {
   try {
     await connectDB();
+
     const body = await req.json();
     const { email, password, name, phone } = body;
 
-    // Check for existing email
+    // ✅ Check for existing email
     const existing = await StreetSeller.findOne({ email });
     if (existing) {
-      return Response.json(
+      return NextResponse.json(
         { error: "Email already registered" },
         { status: 409 }
       );
     }
 
-    // Hash password
+    // ✅ Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create new seller
-    const newSeller = await StreetSeller.create({
+    // ✅ Create buyer without buyerId initially
+    const createdBuyer = await StreetSeller.create({
       email,
-      password: hashedPassword,
-      name,
       phone,
-      // Add any other required fields here
+      name,
+      password: hashedPassword,
     });
 
-    return Response.json({
+    // ✅ Update the document to set buyerId = _id
+    createdBuyer.buyerId = createdBuyer._id.toString();
+    await createdBuyer.save();
+
+    return NextResponse.json({
       success: true,
-      seller: {
-        id: newSeller._id,
-        name: newSeller.name,
-        email: newSeller.email,
-        phone: newSeller.phone
-      }
+      buyer: {
+        id: createdBuyer._id,
+        buyerId: createdBuyer.buyerId,
+        name: createdBuyer.name,
+        email: createdBuyer.email,
+        phone: createdBuyer.phone,
+      },
     });
   } catch (error) {
-    console.error("StreetSeller Signup Error:", error);
-    return Response.json(
-      { error: error.message || "Server error" },
-      { status: 500 }
-    );
+    console.error("StreetBuyer Signup Error:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
