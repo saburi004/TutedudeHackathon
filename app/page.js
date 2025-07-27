@@ -1,13 +1,11 @@
 'use client';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+
+import Landing from '../components/landing';
 
 export default function Home() {
-  const router = useRouter();
-
-  useEffect(() => {
-    router.replace('/login'); 
-  }, []);
-
-  return null; 
+  return (
+    <>
+      <Landing />
+    </>
+  );
 }

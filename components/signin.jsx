@@ -53,7 +53,7 @@ export default function SignIn() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#213A57] via-[#0AD1C8] to-[#80ED99] p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-        <h2 className="text-2xl font-bold text-center text-[#213A57] mb-6">Sign In to FoodChain</h2>
+        <h2 className="text-2xl font-bold text-center text-[#213A57] mb-6 cinzel-bold ">Sign In to FoodChain</h2>
 
         {/* Role Toggle */}
         <div className="flex justify-center mb-6">
