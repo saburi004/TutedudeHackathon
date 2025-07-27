@@ -51,7 +51,7 @@ def get_top_sellers(
     buyer_lat: float,
     buyer_lon: float,
     product: str,
-    top_n: int = 20,
+    top_n = 20,
     kmeans_model=None,
     scaler_model=None,
     full_df=None
