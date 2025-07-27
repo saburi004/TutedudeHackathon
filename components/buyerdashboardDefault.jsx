@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { FaUtensils, FaChartLine, FaMapMarkerAlt, FaHistory, FaEdit, FaPlus, FaTimes } from 'react-icons/fa';
+import { FaUtensils, FaChartLine, FaMapMarkerAlt, FaHistory, FaEdit, FaPlus, FaTimes, FaLocationArrow } from 'react-icons/fa';
 
 export default function BuyerDashboard() {
   const [sellerData, setSellerData] = useState(null);
@@ -20,6 +20,7 @@ export default function BuyerDashboard() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
   const searchParams = useSearchParams();
   const userId = searchParams.get('userId');
 
@@ -56,6 +57,81 @@ export default function BuyerDashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getCurrentLocation = () => {
+    setIsGettingLocation(true);
+    
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by this browser.');
+      setIsGettingLocation(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        // Update form data with coordinates
+        setFormData(prev => ({
+          ...prev,
+          location: {
+            ...prev.location,
+            latitude: latitude,
+            longitude: longitude
+          }
+        }));
+
+        // Try to get address from coordinates using reverse geocoding (OpenStreetMap Nominatim - Free)
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1&accept-language=en`
+          );
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data && data.display_name) {
+              setFormData(prev => ({
+                ...prev,
+                location: {
+                  ...prev.location,
+                  address: data.display_name
+                }
+              }));
+            }
+          }
+        } catch (error) {
+          console.log('Could not fetch address from coordinates:', error);
+          // User can still enter address manually
+        }
+
+        setIsGettingLocation(false);
+      },
+      (error) => {
+        let errorMessage = 'Unable to retrieve your location. ';
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage += 'Location access denied by user.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage += 'Location information is unavailable.';
+            break;
+          case error.TIMEOUT:
+            errorMessage += 'Location request timed out.';
+            break;
+          default:
+            errorMessage += 'An unknown error occurred.';
+            break;
+        }
+        alert(errorMessage);
+        setIsGettingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
   };
 
   const handleInputChange = (e) => {
@@ -158,6 +234,24 @@ export default function BuyerDashboard() {
               <label className="block font-medium mb-2 flex items-center" style={{ color: '#213A57' }}>
                 <FaMapMarkerAlt className="mr-2" style={{ color: '#0DD1C8' }} /> Business Location
               </label>
+              
+              {/* Get Current Location Button */}
+              <div className="mb-4">
+                <button
+                  type="button"
+                  onClick={getCurrentLocation}
+                  disabled={isGettingLocation}
+                  className="px-4 py-2 rounded-lg flex items-center font-medium transition hover:shadow-lg disabled:opacity-50"
+                  style={{ backgroundColor: '#54DEB4', color: '#213A57' }}
+                >
+                  <FaLocationArrow className="mr-2" />
+                  {isGettingLocation ? 'Getting Location...' : 'Use Current Location'}
+                </button>
+                <p className="text-sm text-gray-600 mt-2">
+                  Click to automatically fill coordinates using your current location
+                </p>
+              </div>
+
               <input
                 type="text"
                 name="location.address"
@@ -166,7 +260,7 @@ export default function BuyerDashboard() {
                 className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-#0DD1C8 focus:border-#0DD1C8 outline-none transition"
                 placeholder="Street address"
                 required
-                style={{ borderColor: '#54DEB4' }}
+                style={{ borderColor: '#54DEB4', color: '#000' }}
               />
               <div className="grid grid-cols-2 gap-4 mt-3">
                 <input
@@ -177,7 +271,7 @@ export default function BuyerDashboard() {
                   className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-#0DD1C8 focus:border-#0DD1C8 outline-none transition"
                   placeholder="Latitude"
                   step="any"
-                  style={{ borderColor: '#54DEB4' }}
+                  style={{ borderColor: '#54DEB4', color: '#000' }}
                 />
                 <input
                   type="number"
@@ -187,7 +281,7 @@ export default function BuyerDashboard() {
                   className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-#0DD1C8 focus:border-#0DD1C8 outline-none transition"
                   placeholder="Longitude"
                   step="any"
-                  style={{ borderColor: '#54DEB4' }}
+                  style={{ borderColor: '#54DEB4', color: '#000' }}
                 />
               </div>
             </div>
@@ -203,7 +297,7 @@ export default function BuyerDashboard() {
                     className="flex-1 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-#0DD1C8 focus:border-#0DD1C8 outline-none transition"
                     placeholder="Food item name"
                     required
-                    style={{ borderColor: '#54DEB4' }}
+                    style={{ borderColor: '#54DEB4', color: '#000' }}
                   />
                   {formData.foodItems.length > 1 && (
                     <button
@@ -237,7 +331,7 @@ export default function BuyerDashboard() {
                   onChange={handleInputChange}
                   className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-#0DD1C8 focus:border-#0DD1C8 outline-none transition"
                   min="0"
-                  style={{ borderColor: '#54DEB4' }}
+                  style={{ borderColor: '#54DEB4', color: '#000' }}
                 />
               </div>
               <div>
@@ -249,7 +343,7 @@ export default function BuyerDashboard() {
                   onChange={handleInputChange}
                   className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-#0DD1C8 focus:border-#0DD1C8 outline-none transition"
                   min="0"
-                  style={{ borderColor: '#54DEB4' }}
+                  style={{ borderColor: '#54DEB4', color: '#000' }}
                 />
               </div>
             </div>
@@ -436,19 +530,10 @@ export default function BuyerDashboard() {
   );
 }
 
-
-
-
-
-
-
-
-
-
 // 'use client';
 // import { useState, useEffect } from 'react';
 // import { useSearchParams } from 'next/navigation';
-// import { FaUtensils, FaChartLine, FaMapMarkerAlt, FaHistory } from 'react-icons/fa';
+// import { FaUtensils, FaChartLine, FaMapMarkerAlt, FaHistory, FaEdit, FaPlus, FaTimes } from 'react-icons/fa';
 
 // export default function BuyerDashboard() {
 //   const [sellerData, setSellerData] = useState(null);
@@ -584,73 +669,82 @@ export default function BuyerDashboard() {
 //     }
 //   };
 
-//   if (loading) return <div className="p-6 text-black">Loading...</div>;
+//   if (loading) return (
+//     <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: '#213A57' }}>
+//       <div className="text-white text-2xl">Loading...</div>
+//     </div>
+//   );
 
 //   const showForm = editing || !sellerData?.location?.address;
 
 //   return (
-//     <div className="p-6">
+//     <div className="min-h-screen p-6" style={{ backgroundColor: '#f8fafc' }}>
 //       {showForm ? (
-//         <div className="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto text-black">
-//           <h2 className="text-2xl font-bold mb-6 flex items-center">
-//             <FaUtensils className="mr-2" /> Business Details
+//         <div className="bg-white rounded-xl shadow-lg p-8 max-w-2xl mx-auto" style={{ borderTop: '4px solid #0DD1C8' }}>
+//           <h2 className="text-2xl font-bold mb-6 flex items-center" style={{ color: '#213A57' }}>
+//             <FaUtensils className="mr-2" style={{ color: '#0DD1C8' }} /> Business Details
 //           </h2>
           
-//           <form onSubmit={handleSubmit} className="space-y-6 text-black">
+//           <form onSubmit={handleSubmit} className="space-y-6">
 //             <div>
-//               <label className="block font-medium mb-2 flex items-center text-black">
-//                 <FaMapMarkerAlt className="mr-2" /> Business Location
+//               <label className="block font-medium mb-2 flex items-center" style={{ color: '#213A57' }}>
+//                 <FaMapMarkerAlt className="mr-2" style={{ color: '#0DD1C8' }} /> Business Location
 //               </label>
 //               <input
 //                 type="text"
 //                 name="location.address"
 //                 value={formData.location.address}
 //                 onChange={handleInputChange}
-//                 className="w-full p-2 border border-gray-300 rounded-md text-black"
+//                 className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-#0DD1C8 focus:border-#0DD1C8 outline-none transition"
 //                 placeholder="Street address"
 //                 required
+//                 style={{ borderColor: '#54DEB4' }}
 //               />
-//               <div className="grid grid-cols-2 gap-4 mt-2">
+//               <div className="grid grid-cols-2 gap-4 mt-3">
 //                 <input
 //                   type="number"
 //                   name="location.latitude"
 //                   value={formData.location.latitude}
 //                   onChange={handleInputChange}
-//                   className="w-full p-2 border border-gray-300 rounded-md text-black"
+//                   className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-#0DD1C8 focus:border-#0DD1C8 outline-none transition"
 //                   placeholder="Latitude"
 //                   step="any"
+//                   style={{ borderColor: '#54DEB4' }}
 //                 />
 //                 <input
 //                   type="number"
 //                   name="location.longitude"
 //                   value={formData.location.longitude}
 //                   onChange={handleInputChange}
-//                   className="w-full p-2 border border-gray-300 rounded-md text-black"
+//                   className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-#0DD1C8 focus:border-#0DD1C8 outline-none transition"
 //                   placeholder="Longitude"
 //                   step="any"
+//                   style={{ borderColor: '#54DEB4' }}
 //                 />
 //               </div>
 //             </div>
 
 //             <div>
-//               <label className="block font-medium mb-2 text-black">Food Items</label>
+//               <label className="block font-medium mb-2" style={{ color: '#213A57' }}>Food Items</label>
 //               {formData.foodItems.map((item, index) => (
 //                 <div key={index} className="flex items-center mb-2">
 //                   <input
 //                     type="text"
 //                     value={item}
 //                     onChange={(e) => handleFoodItemChange(index, e.target.value)}
-//                     className="flex-1 p-2 border border-gray-300 rounded-md text-black"
+//                     className="flex-1 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-#0DD1C8 focus:border-#0DD1C8 outline-none transition"
 //                     placeholder="Food item name"
 //                     required
+//                     style={{ borderColor: '#54DEB4' }}
 //                   />
 //                   {formData.foodItems.length > 1 && (
 //                     <button
 //                       type="button"
 //                       onClick={() => removeFoodItem(index)}
-//                       className="ml-2 p-2 text-red-500"
+//                       className="ml-2 p-2 rounded-full hover:bg-gray-100 transition"
+//                       style={{ color: '#213A57' }}
 //                     >
-//                       ×
+//                       <FaTimes />
 //                     </button>
 //                   )}
 //                 </div>
@@ -658,52 +752,57 @@ export default function BuyerDashboard() {
 //               <button
 //                 type="button"
 //                 onClick={addFoodItem}
-//                 className="mt-2 text-sm text-blue-500 hover:text-blue-700"
+//                 className="mt-2 px-3 py-1 text-sm rounded-lg flex items-center transition"
+//                 style={{ backgroundColor: '#54DEB4', color: '#213A57' }}
 //               >
-//                 + Add another food item
+//                 <FaPlus className="mr-1" /> Add another food item
 //               </button>
 //             </div>
 
 //             <div className="grid grid-cols-2 gap-6">
 //               <div>
-//                 <label className="block font-medium mb-2 text-black">Total Prepared Today</label>
+//                 <label className="block font-medium mb-2" style={{ color: '#213A57' }}>Total Prepared Today</label>
 //                 <input
 //                   type="number"
 //                   name="dailyInput.totalPrepared"
 //                   value={formData.dailyInput.totalPrepared}
 //                   onChange={handleInputChange}
-//                   className="w-full p-2 border border-gray-300 rounded-md text-black"
+//                   className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-#0DD1C8 focus:border-#0DD1C8 outline-none transition"
 //                   min="0"
+//                   style={{ borderColor: '#54DEB4' }}
 //                 />
 //               </div>
 //               <div>
-//                 <label className="block font-medium mb-2 text-black">Total Sold Today</label>
+//                 <label className="block font-medium mb-2" style={{ color: '#213A57' }}>Total Sold Today</label>
 //                 <input
 //                   type="number"
 //                   name="dailyInput.totalSold"
 //                   value={formData.dailyInput.totalSold}
 //                   onChange={handleInputChange}
-//                   className="w-full p-2 border border-gray-300 rounded-md text-black"
+//                   className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-#0DD1C8 focus:border-#0DD1C8 outline-none transition"
 //                   min="0"
+//                   style={{ borderColor: '#54DEB4' }}
 //                 />
 //               </div>
 //             </div>
 
-//             <div className="flex justify-end space-x-4">
+//             <div className="flex justify-end space-x-4 pt-4">
 //               {sellerData?.location?.address && (
 //                 <button
 //                   type="button"
 //                   onClick={() => setEditing(false)}
-//                   className="px-4 py-2 border border-gray-300 rounded-md text-black"
+//                   className="px-6 py-2 border rounded-lg font-medium transition"
 //                   disabled={isSubmitting}
+//                   style={{ borderColor: '#213A57', color: '#213A57' }}
 //                 >
 //                   Cancel
 //                 </button>
 //               )}
 //               <button
 //                 type="submit"
-//                 className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
+//                 className="px-6 py-2 rounded-lg font-medium text-white transition hover:shadow-lg disabled:opacity-50"
 //                 disabled={isSubmitting}
+//                 style={{ backgroundColor: '#0DD1C8' }}
 //               >
 //                 {isSubmitting ? 'Saving...' : 'Save Details'}
 //               </button>
@@ -711,109 +810,154 @@ export default function BuyerDashboard() {
 //           </form>
 //         </div>
 //       ) : (
-//         <div className="max-w-4xl mx-auto">
-//           <div className="flex justify-between items-center mb-6">
-//             <h1 className="text-3xl font-bold text-black">{sellerData.name}'s Dashboard</h1>
+//         <div className="max-w-6xl mx-auto">
+//           <div className="flex justify-between items-center mb-8">
+//             <h1 className="text-3xl font-bold" style={{ color: '#213A57' }}>{sellerData.name}'s Dashboard</h1>
 //             <button
 //               onClick={() => setEditing(true)}
-//               className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+//               className="px-5 py-2 rounded-lg font-medium flex items-center transition hover:shadow-lg"
+//               style={{ backgroundColor: '#0DD1C8', color: 'white' }}
 //             >
-//               Edit Details
+//               <FaEdit className="mr-2" /> Edit Details
 //             </button>
-//             </div>
+//           </div>
 
-//           {/* User Information Cards */}
-//           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-//             <div className="bg-white rounded-lg shadow-md p-6">
-//               <h2 className="text-xl font-semibold mb-4 flex items-center text-black">
-//                 <FaMapMarkerAlt className="mr-2" /> Location
-//               </h2>
-//               <p className="text-black">{sellerData.location.address}</p>
-//               <p className="text-sm text-gray-500 mt-1">
-//                 Lat: {sellerData.location.latitude}, Lng: {sellerData.location.longitude}
-//               </p>
-//             </div>
-
-//             <div className="bg-white rounded-lg shadow-md p-6">
-//               <h2 className="text-xl font-semibold mb-4 flex items-center text-black">
-//                 <FaUtensils className="mr-2" /> Food Items
-//               </h2>
-//               <ul className="list-disc pl-5 text-black">
-//                 {sellerData.foodItems?.map((item, index) => (
-//                   <li key={index}>{item}</li>
-//                 )) || <li>No food items added</li>}
-//               </ul>
-//             </div>
-
-//             <div className="bg-white rounded-lg shadow-md p-6">
-//               <h2 className="text-xl font-semibold mb-4 flex items-center text-black">
-//                 <FaChartLine className="mr-2" /> Daily Stats
-//               </h2>
-//               <div className="space-y-4">
-//                 <div>
-//                   <p className="text-sm text-gray-500">Prepared Today</p>
-//                   <p className="text-2xl font-bold text-black">
-//                     {sellerData.dailyInput?.totalPrepared || 0}
-//                   </p>
+//           {/* Stats Overview Cards */}
+//           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+//             <div className="bg-white rounded-xl shadow-md p-6 transition hover:shadow-lg" style={{ borderTop: '4px solid #0DD1C8' }}>
+//               <div className="flex items-center mb-4">
+//                 <div className="p-3 rounded-full mr-3" style={{ backgroundColor: '#E8F9F8' }}>
+//                   <FaUtensils style={{ color: '#0DD1C8' }} />
 //                 </div>
-//                 <div>
-//                   <p className="text-sm text-gray-500">Sold Today</p>
-//                   <p className="text-2xl font-bold text-black">
-//                     {sellerData.dailyInput?.totalSold || 0}
-//                   </p>
-//                 </div>
-//                 {sellerData.dailyInput?.date && (
-//                   <div>
-//                     <p className="text-sm text-gray-500">Last Updated</p>
-//                     <p className="text-sm text-black">
-//                       {new Date(sellerData.dailyInput.date).toLocaleDateString()}
-//                     </p>
-//                   </div>
-//                 )}
+//                 <h3 className="font-semibold" style={{ color: '#213A57' }}>Food Items</h3>
 //               </div>
+//               <p className="text-2xl font-bold mb-2" style={{ color: '#213A57' }}>{sellerData.foodItems?.length || 0}</p>
+//               <p className="text-sm" style={{ color: '#54DEB4' }}>Registered dishes</p>
+//             </div>
+
+//             <div className="bg-white rounded-xl shadow-md p-6 transition hover:shadow-lg" style={{ borderTop: '4px solid #54DEB4' }}>
+//               <div className="flex items-center mb-4">
+//                 <div className="p-3 rounded-full mr-3" style={{ backgroundColor: '#E8F9F8' }}>
+//                   <FaChartLine style={{ color: '#54DEB4' }} />
+//                 </div>
+//                 <h3 className="font-semibold" style={{ color: '#213A57' }}>Prepared Today</h3>
+//               </div>
+//               <p className="text-2xl font-bold mb-2" style={{ color: '#213A57' }}>
+//                 {sellerData.dailyInput?.totalPrepared || 0}
+//               </p>
+//               <p className="text-sm" style={{ color: '#54DEB4' }}>Dishes made</p>
+//             </div>
+
+//             <div className="bg-white rounded-xl shadow-md p-6 transition hover:shadow-lg" style={{ borderTop: '4px solid #0DD1C8' }}>
+//               <div className="flex items-center mb-4">
+//                 <div className="p-3 rounded-full mr-3" style={{ backgroundColor: '#E8F9F8' }}>
+//                   <FaChartLine style={{ color: '#0DD1C8' }} />
+//                 </div>
+//                 <h3 className="font-semibold" style={{ color: '#213A57' }}>Sold Today</h3>
+//               </div>
+//               <p className="text-2xl font-bold mb-2" style={{ color: '#213A57' }}>
+//                 {sellerData.dailyInput?.totalSold || 0}
+//               </p>
+//               <p className="text-sm" style={{ color: '#54DEB4' }}>Dishes served</p>
+//             </div>
+
+//             <div className="bg-white rounded-xl shadow-md p-6 transition hover:shadow-lg" style={{ borderTop: '4px solid #54DEB4' }}>
+//               <div className="flex items-center mb-4">
+//                 <div className="p-3 rounded-full mr-3" style={{ backgroundColor: '#E8F9F8' }}>
+//                   <FaHistory style={{ color: '#54DEB4' }} />
+//                 </div>
+//                 <h3 className="font-semibold" style={{ color: '#213A57' }}>Last Updated</h3>
+//               </div>
+//               <p className="text-2xl font-bold mb-2" style={{ color: '#213A57' }}>
+//                 {sellerData.dailyInput?.date ? new Date(sellerData.dailyInput.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A'}
+//               </p>
+//               <p className="text-sm" style={{ color: '#54DEB4' }}>Recent activity</p>
 //             </div>
 //           </div>
 
-//           {/* Contact Information */}
-//           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//             <div className="bg-white rounded-lg shadow-md p-6">
-//               <h2 className="text-xl font-semibold mb-4 text-black">Contact Information</h2>
-//               <div className="space-y-2">
-//                 <div>
-//                   <p className="text-sm text-gray-500">Name</p>
-//                   <p className="text-black">{sellerData.name}</p>
+//           {/* Detailed Information Sections */}
+//           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+//             {/* Location and Food Items */}
+//             <div className="bg-white rounded-xl shadow-md overflow-hidden">
+//               <div className="p-6" style={{ borderBottom: '1px solid #f1f5f9' }}>
+//                 <h2 className="text-xl font-semibold mb-4 flex items-center" style={{ color: '#213A57' }}>
+//                   <FaMapMarkerAlt className="mr-2" style={{ color: '#0DD1C8' }} /> Location Details
+//                 </h2>
+//                 <div className="space-y-3">
+//                   <div>
+//                     <p className="text-sm font-medium" style={{ color: '#54DEB4' }}>Address</p>
+//                     <p className="text-black">{sellerData.location.address}</p>
+//                   </div>
+//                   <div className="grid grid-cols-2 gap-4">
+//                     <div>
+//                       <p className="text-sm font-medium" style={{ color: '#54DEB4' }}>Latitude</p>
+//                       <p className="text-black">{sellerData.location.latitude}</p>
+//                     </div>
+//                     <div>
+//                       <p className="text-sm font-medium" style={{ color: '#54DEB4' }}>Longitude</p>
+//                       <p className="text-black">{sellerData.location.longitude}</p>
+//                     </div>
+//                   </div>
 //                 </div>
-//                 <div>
-//                   <p className="text-sm text-gray-500">Email</p>
-//                   <p className="text-black">{sellerData.email}</p>
-//                 </div>
-//                 <div>
-//                   <p className="text-sm text-gray-500">Phone</p>
-//                   <p className="text-black">{sellerData.phone}</p>
+//               </div>
+//               <div className="p-6">
+//                 <h2 className="text-xl font-semibold mb-4 flex items-center" style={{ color: '#213A57' }}>
+//                   <FaUtensils className="mr-2" style={{ color: '#0DD1C8' }} /> Food Items
+//                 </h2>
+//                 <div className="space-y-2">
+//                   {sellerData.foodItems?.length > 0 ? (
+//                     sellerData.foodItems.map((item, index) => (
+//                       <div key={index} className="flex items-center py-2 px-3 rounded-lg" style={{ backgroundColor: '#f8fafc' }}>
+//                         <span className="flex-1" style={{ color: '#213A57' }}>{item}</span>
+//                       </div>
+//                     ))
+//                   ) : (
+//                     <p className="text-gray-500">No food items added</p>
+//                   )}
 //                 </div>
 //               </div>
 //             </div>
 
-//             <div className="bg-white rounded-lg shadow-md p-6">
-//               <h2 className="text-xl font-semibold mb-4 flex items-center text-black">
-//                 <FaHistory className="mr-2" /> Account Information
-//               </h2>
-//               <div className="space-y-2">
-//                 <div>
-//                   <p className="text-sm text-gray-500">Buyer ID</p>
-//                   <p className="text-black font-mono text-sm">{sellerData.buyerId}</p>
+//             {/* Contact and Account Information */}
+//             <div className="bg-white rounded-xl shadow-md overflow-hidden">
+//               <div className="p-6" style={{ borderBottom: '1px solid #f1f5f9' }}>
+//                 <h2 className="text-xl font-semibold mb-4" style={{ color: '#213A57' }}>Contact Information</h2>
+//                 <div className="space-y-4">
+//                   <div>
+//                     <p className="text-sm font-medium" style={{ color: '#54DEB4' }}>Full Name</p>
+//                     <p className="text-black">{sellerData.name}</p>
+//                   </div>
+//                   <div>
+//                     <p className="text-sm font-medium" style={{ color: '#54DEB4' }}>Email Address</p>
+//                     <p className="text-black">{sellerData.email}</p>
+//                   </div>
+//                   <div>
+//                     <p className="text-sm font-medium" style={{ color: '#54DEB4' }}>Phone Number</p>
+//                     <p className="text-black">{sellerData.phone}</p>
+//                   </div>
 //                 </div>
-//                 <div>
-//                   <p className="text-sm text-gray-500">Account Created</p>
-//                   <p className="text-black">
-//                     {new Date(sellerData.createdAt).toLocaleDateString()}
-//                   </p>
-//                 </div>
-//                 <div>
-//                   <p className="text-sm text-gray-500">Status</p>
-//                   <span className="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-//                     Active
-//                   </span>
+//               </div>
+//               <div className="p-6">
+//                 <h2 className="text-xl font-semibold mb-4 flex items-center" style={{ color: '#213A57' }}>
+//                   <FaHistory className="mr-2" style={{ color: '#0DD1C8' }} /> Account Information
+//                 </h2>
+//                 <div className="space-y-4">
+//                   <div>
+//                     <p className="text-sm font-medium" style={{ color: '#54DEB4' }}>Buyer ID</p>
+//                     <p className="font-mono text-sm text-black">{sellerData.buyerId}</p>
+//                   </div>
+//                   <div>
+//                     <p className="text-sm font-medium" style={{ color: '#54DEB4' }}>Member Since</p>
+//                     <p className="text-black">
+//                       {new Date(sellerData.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+//                     </p>
+//                   </div>
+//                   <div>
+//                     <p className="text-sm font-medium" style={{ color: '#54DEB4' }}>Account Status</p>
+//                     <span className="inline-block px-3 py-1 rounded-full text-sm font-medium" style={{ backgroundColor: '#E8F9F8', color: '#0DD1C8' }}>
+//                       Active
+//                     </span>
+//                   </div>
 //                 </div>
 //               </div>
 //             </div>
@@ -823,4 +967,13 @@ export default function BuyerDashboard() {
 //     </div>
 //   );
 // }
+
+
+
+
+
+
+
+
+
 

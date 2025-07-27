@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 export default function SignIn() {
-  const [role, setRole] = useState('seller');
+  const [role, setRole] = useState('buyer');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
