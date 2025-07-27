@@ -66,6 +66,11 @@ export default function Register() {
   const router = useRouter();
 
   const handleSubmit = async (e) => {
+    if (data.token) {
+        localStorage.setItem("token", data.token);
+      } else {
+        throw new Error("Token not received from server");
+      }
     e.preventDefault();
     setLoading(true);
     setError("");
