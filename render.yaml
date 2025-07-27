@@ -9,4 +9,4 @@ services:
     autoDeploy: true
     envVars:
       - key: NODE_VERSION
-        value: 18.16.0
+        value: 20.10.0
