@@ -1,21 +1,62 @@
+# app.py - Updated with MongoDB integration
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pandas as pd
 import joblib
-from geo_clustering_model import get_top_sellers, load_model_and_data  # Make sure this function is defined correctly
+from geo_clustering_model import get_top_sellers, load_model_and_data, retrain_model_with_new_seller
+from db_manager import DatabaseManager
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend access
 
 @app.route("/")
 def home():
-    return "✅ SwaadAI Backend Running!"
+    return "✅ SwaadAI Backend Running with MongoDB Integration!"
+
+@app.route("/api/health", methods=["GET"])
+def health_check():
+    """Health check endpoint"""
+    try:
+        # Test database connection
+        db_manager = DatabaseManager()
+        seller_count = db_manager.get_seller_count()
+        db_manager.close_connection()
+        
+        return jsonify({
+            "status": "healthy",
+            "database": "connected",
+            "total_sellers": seller_count,
+            "message": "All systems operational"
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "unhealthy",
+            "database": "disconnected",
+            "error": str(e)
+        }), 500
 
 @app.route("/api/get-products", methods=["GET"])
 def get_products():
-    """Get list of available products"""
+    """Get list of available products from MongoDB"""
     try:
-        _, _, df = load_model_and_data()
+        db_manager = DatabaseManager()
+        df = db_manager.get_all_sellers_as_dataframe()
+        db_manager.close_connection()
+        
+        if df.empty:
+            return jsonify({
+                "status": "success",
+                "products": [],
+                "total_count": 0,
+                "message": "No products available"
+            })
+        
         products = sorted(df['Product'].unique().tolist())
         
         return jsonify({
@@ -24,7 +65,7 @@ def get_products():
             "total_count": len(products)
         })
     except Exception as e:
-        print(f"❌ Error getting products: {str(e)}")
+        logger.error(f"❌ Error getting products: {str(e)}")
         return jsonify({
             "status": "error",
             "message": "Failed to load products: " + str(e)
@@ -32,85 +73,140 @@ def get_products():
 
 @app.route("/api/get-initial-sellers", methods=["GET"])
 def get_initial_sellers():
-    """Get initial 20-30 sellers to display on page load"""
+    """Get initial sellers from MongoDB with debugging"""
     try:
-        _, _, df = load_model_and_data()
+        logger.info("🔍 Starting get_initial_sellers...")
         
-        # Get unique sellers based on Seller_ID and aggregate their data
-        initial_sellers = df.groupby('Seller_ID').agg({
-            'Name': 'first',
-            'Locality': 'first', 
-            'Rating': 'mean',
-            'Verified': 'first',
-            'Price_per_kg': 'mean',
-            'Email': 'first',       
-            'Mobile': 'first' 
-        }).reset_index()
+        db_manager = DatabaseManager()
+        df = db_manager.get_all_sellers_as_dataframe()
+        db_manager.close_connection()
         
-        # Ensure no duplicate Seller_IDs
-        initial_sellers = initial_sellers.drop_duplicates(subset=['Seller_ID'])
+        logger.info(f"📊 Retrieved DataFrame with shape: {df.shape}")
+        logger.info(f"📋 Columns: {list(df.columns)}")
         
-        # Sort by rating and take top 30
-        initial_sellers = initial_sellers.sort_values('Rating', ascending=False).head(30)
+        if df.empty:
+            logger.warning("⚠️ DataFrame is empty!")
+            return jsonify({
+                "status": "success",
+                "sellers": [],
+                "total_count": 0,
+                "message": "No sellers available in database"
+            })
         
-        # Add a default score for initial display
-        initial_sellers['Score'] = initial_sellers['Rating'] / 5.0
+        # Log first few records for debugging
+        logger.info("📝 First record:")
+        if len(df) > 0:
+            first_record = df.iloc[0].to_dict()
+            for key, value in first_record.items():
+                logger.info(f"  {key}: {value} (type: {type(value)})")
         
-        print(f"✅ Returning {len(initial_sellers)} unique initial sellers")
+        # Simple conversion - just take all records as they are
+        sellers_list = []
+        
+        for index, row in df.iterrows():
+            seller_dict = {}
+            
+            # Safely convert each field
+            for col in df.columns:
+                value = row[col]
+                if pd.isna(value):
+                    seller_dict[col] = None
+                elif isinstance(value, (int, float, str, bool)):
+                    seller_dict[col] = value
+                else:
+                    seller_dict[col] = str(value)
+            
+            # Ensure Seller_ID exists
+            if 'Seller_ID' not in seller_dict or seller_dict['Seller_ID'] is None:
+                seller_dict['Seller_ID'] = f"SELLER_{index}"
+            
+            sellers_list.append(seller_dict)
+            
+            # Limit to 30 for initial display
+            if len(sellers_list) >= 30:
+                break
+        
+        logger.info(f"✅ Returning {len(sellers_list)} sellers")
+        logger.info(f"📋 Sample seller: {sellers_list[0] if sellers_list else 'None'}")
         
         return jsonify({
             "status": "success",
-            "sellers": initial_sellers.to_dict(orient="records"),
-            "total_count": len(initial_sellers)
+            "sellers": sellers_list,
+            "total_count": len(sellers_list)
         })
         
     except Exception as e:
-        print(f"❌ Error getting initial sellers: {str(e)}")
+        logger.error(f"❌ Error in get_initial_sellers: {str(e)}")
         return jsonify({
             "status": "error",
-            "message": "Failed to load initial sellers: " + str(e)
+            "message": f"Failed to load sellers: {str(e)}",
+            "sellers": [],
+            "total_count": 0
         }), 500
 
-@app.route("/api/get-all-sellers", methods=["GET"])
-def get_all_sellers():
-    """Fallback endpoint to get all sellers"""
+@app.route("/api/register-seller", methods=["POST"])
+def register_seller():
+    """Register a new seller and retrain the model"""
     try:
-        _, _, df = load_model_and_data()
+        data = request.get_json()
+        logger.info(f"📨 New seller registration data: {data}")
+
+        if not data:
+            return jsonify({"status": "error", "message": "Missing JSON body"}), 400
+
+        # Validate required fields
+        required_fields = ['Name', 'Email', 'Mobile', 'Locality', 'Latitude', 'Longitude', 
+                          'Product', 'Price_per_kg', 'Stock_quantity']
         
-        # Get all unique sellers
-        all_sellers = df.groupby('Seller_ID').agg({
-            'Name': 'first',
-            'Locality': 'first',
-            'Rating': 'mean',
-            'Verified': 'first',
-            'Price_per_kg': 'mean'
-        }).reset_index()
-        
-        # Ensure no duplicates
-        all_sellers = all_sellers.drop_duplicates(subset=['Seller_ID'])
-        
-        # Sort by rating
-        all_sellers = all_sellers.sort_values('Rating', ascending=False)
-        all_sellers['Score'] = all_sellers['Rating'] / 5.0
-        
-        print(f"✅ Returning {len(all_sellers)} unique sellers")
+        missing_fields = [field for field in required_fields if field not in data or data[field] is None]
+        if missing_fields:
+            return jsonify({
+                "status": "error",
+                "message": f"Missing required fields: {missing_fields}"
+            }), 400
+
+        # Add default values for optional fields
+        seller_data = {
+            "Seller_ID": data.get('Seller_ID') or f"SELLER_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}",
+            "Name": data['Name'],
+            "Email": data['Email'],
+            "Mobile": data['Mobile'],
+            "Locality": data['Locality'],
+            "Latitude": float(data['Latitude']),
+            "Longitude": float(data['Longitude']),
+            "Product": data['Product'],
+            "Price_per_kg": float(data['Price_per_kg']),
+            "Stock_quantity": int(data['Stock_quantity']),
+            "Rating": data.get('Rating', 4.0),  # Default rating
+            "Verified": data.get('Verified', False)  # Default not verified
+        }
+
+        # Add seller and retrain model
+        seller_id = retrain_model_with_new_seller(seller_data)
         
         return jsonify({
             "status": "success",
-            "sellers": all_sellers.to_dict(orient="records"),
-            "total_count": len(all_sellers)
+            "message": "Seller registered successfully and model updated",
+            "seller_id": seller_id
         })
-        
-    except Exception as e:
-        print(f"❌ Error getting all sellers: {str(e)}")
+
+    except ValueError as ve:
+        logger.error(f"❌ Value Error: {str(ve)}")
         return jsonify({
             "status": "error",
-            "message": "Failed to load sellers: " + str(e)
+            "message": f"Invalid input data: {str(ve)}"
+        }), 400
+
+    except Exception as e:
+        logger.error(f"❌ Server Error: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "message": "Registration failed: " + str(e)
         }), 500
 
 @app.route("/api/search-sellers", methods=["POST"])
 def search_sellers():
-    """Search sellers without location (fallback)"""
+    """Search sellers without location (fallback) from MongoDB"""
     try:
         data = request.get_json()
         product = data.get("product")
@@ -121,7 +217,16 @@ def search_sellers():
                 "message": "product field is required"
             }), 400
             
-        _, _, df = load_model_and_data()
+        db_manager = DatabaseManager()
+        df = db_manager.get_all_sellers_as_dataframe()
+        db_manager.close_connection()
+        
+        if df.empty:
+            return jsonify({
+                "status": "success",
+                "sellers": [],
+                "message": "No sellers available in database"
+            })
         
         # Filter sellers by product
         product_sellers = df[df['Product'].str.contains(product, case=False, na=False)]
@@ -149,7 +254,7 @@ def search_sellers():
         sellers = sellers.sort_values('Rating', ascending=False).head(20)
         sellers['Score'] = sellers['Rating'] / 5.0
         
-        print(f"✅ Found {len(sellers)} unique sellers for product: {product}")
+        logger.info(f"✅ Found {len(sellers)} unique sellers for product: {product}")
         
         return jsonify({
             "status": "success",
@@ -157,7 +262,7 @@ def search_sellers():
         })
         
     except Exception as e:
-        print(f"❌ Error in search sellers: {str(e)}")
+        logger.error(f"❌ Error in search sellers: {str(e)}")
         return jsonify({
             "status": "error",
             "message": "Search failed: " + str(e)
@@ -165,9 +270,10 @@ def search_sellers():
 
 @app.route("/api/get-sellers", methods=["POST"])
 def get_sellers():
+    """Get top sellers based on location and clustering"""
     try:
         data = request.get_json()
-        print("📨 Incoming JSON data:", data)
+        logger.info(f"📨 Incoming location-based search: {data}")
 
         if not data:
             return jsonify({"status": "error", "message": "Missing JSON body"}), 400
@@ -185,9 +291,9 @@ def get_sellers():
         lat = float(lat)
         lon = float(lon)
 
-        print(f"📍 Received coordinates: ({lat}, {lon}) for product: {product}")
+        logger.info(f"📍 Searching for sellers at ({lat}, {lon}) for product: {product}")
 
-        # Call your logic to find sellers - INCREASED TO 20 SELLERS
+        # Call clustering model to find sellers
         sellers = get_top_sellers(lat, lon, product, top_n=20)
 
         # Check if sellers DataFrame is empty
@@ -204,24 +310,45 @@ def get_sellers():
         })
 
     except ValueError as ve:
-        print(f"❌ Value Error: {str(ve)}")
+        logger.error(f"❌ Value Error: {str(ve)}")
         return jsonify({
             "status": "error",
             "message": f"Invalid input data: {str(ve)}"
         }), 400
 
     except FileNotFoundError as fe:
-        print(f"❌ File Error: {str(fe)}")
+        logger.error(f"❌ File Error: {str(fe)}")
         return jsonify({
             "status": "error",
             "message": "Model files not found. Please train the model first."
         }), 500
 
     except Exception as e:
-        print(f"❌ Server Error: {str(e)}")
+        logger.error(f"❌ Server Error: {str(e)}")
         return jsonify({
             "status": "error",
             "message": "Internal server error: " + str(e)
+        }), 500
+
+@app.route("/api/retrain-model", methods=["POST"])
+def retrain_model():
+    """Manually trigger model retraining"""
+    try:
+        from geo_clustering_model import train_and_save_model
+        
+        logger.info("🔄 Manual model retraining triggered")
+        train_and_save_model(auto_sync=True)
+        
+        return jsonify({
+            "status": "success",
+            "message": "Model retrained successfully"
+        })
+        
+    except Exception as e:
+        logger.error(f"❌ Error retraining model: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "message": "Model retraining failed: " + str(e)
         }), 500
 
 if __name__ == "__main__":
