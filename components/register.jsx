@@ -66,11 +66,7 @@ export default function Register() {
   const router = useRouter();
 
   const handleSubmit = async (e) => {
-    if (data.token) {
-        localStorage.setItem("token", data.token);
-      } else {
-        throw new Error("Token not received from server");
-      }
+  
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -99,6 +95,11 @@ export default function Register() {
       if (!response.ok) {
         throw new Error(data.error || "Registration failed");
       }
+        if (data.token) {
+        localStorage.setItem("token", data.token);
+      } else {
+        throw new Error("Token not received from server");
+      }
 
       // Redirect based on role with the seller's ID
       const redirectPath =
