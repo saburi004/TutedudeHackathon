@@ -18,10 +18,12 @@ Create a `.env.local` file in the root directory with the following variables:
 ```env
 # Hugging Face API Key for sentiment analysis
 # Get your API key from: https://huggingface.co/settings/tokens
-HUGGING_FACE_API_KEY=your_hugging_face_api_key_here
-
-# MongoDB connection string
-MONGODB_URI=your_mongodb_connection_string_here
+HUGGING_FACE_API_KEY
+JWT_SECRET
+UPSTASH_REDIS_REST_URL
+UPSTASH_REDIS_REST_TOKEN
+GROQ_API_KEY
+MONGODB_URI
 ```
 
 ## Getting Started
