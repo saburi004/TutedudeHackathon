@@ -108,10 +108,7 @@ git clone https://github.com/saburi004/TutedudeHackathon.git
 cd TutedudeHackathon
 npm install
 ```
-Create a .env file in the root directory and add the following:
-JWT_SECRET=your_secret_key
-MONGO_URI=your_mongodb_connection_string
-GROQ_API_KEY=your_api_key
+Create a .env file in the root directory 
 
 ```bash
 docker compose up -d 
