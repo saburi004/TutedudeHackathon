@@ -1,5 +1,10 @@
-import BuyItems from '@/components/buyitem';
+import { Suspense } from "react";
+import BuyItems from "@/components/buyitem";
 
 export default function BuyItemsPage() {
-  return <BuyItems />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BuyItems />
+    </Suspense>
+  );
 }
