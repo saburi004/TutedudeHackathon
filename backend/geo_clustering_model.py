@@ -20,7 +20,7 @@ MODEL_DIR.mkdir(exist_ok=True)
 
 SCALER_F    = MODEL_DIR / "geo_scaler.pkl"
 KMEANS_F    = MODEL_DIR / "geo_kmeans.pkl"
-K_CLUSTERS  = 5  # Based on Elbow/Silhouette (will auto-adjust for small datasets)
+K_CLUSTERS  = 5 
 W_DISTANCE  = 0.4
 W_PRICE     = 0.3
 W_RATING    = 0.3

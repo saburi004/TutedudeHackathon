@@ -1,17 +1,17 @@
 import mongoose from "mongoose";
 
 const StreetSellerSchema = new mongoose.Schema({
-  buyerId: { type: String, unique: true }, // _id as string
+  buyerId: { type: String, unique: true }, 
   name: String,
   email: { type: String, unique: true },
   phone: String,
-  password: String, // hashed
+  password: String, 
   location: {
     latitude: Number,
     longitude: Number,
     address: String,
   },
-  foodItems: [String], // e.g., ["pav bhaji", "vada pav"]
+  foodItems: [String], 
   dailyInput: {
     totalPrepared: Number,
     totalSold: Number,

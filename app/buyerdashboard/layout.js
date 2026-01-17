@@ -1,6 +1,6 @@
 'use client';
 import { Suspense } from 'react';
-import DashboardLayout from '@/components/buyerDashboard';
+import DashboardLayout from '@/components/buyerDashboardLayout';
 
 export default function BuyerDashboardLayout({ children }) {
   return (

@@ -1,9 +1,54 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { FaStar, FaShoppingCart, FaSearch, FaMapMarkerAlt, FaEnvelope, FaPhone, FaArrowLeft, FaUser, FaCheckCircle } from 'react-icons/fa';
+import { FaStar, FaShoppingCart, FaSearch, FaMapMarkerAlt, FaEnvelope, FaPhone, FaArrowLeft, FaUser, FaCheckCircle, FaCommentDots } from 'react-icons/fa';
+import ReviewModal from './ReviewModal';
 
 // Seller Details Component
 const SellerDetails = ({ seller, onBack }) => {
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [reviewSummary, setReviewSummary] = useState(null);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+  const [buyerId, setBuyerId] = useState('');
+
+  useEffect(() => {
+    // Get buyer ID from localStorage or URL params
+    const token = localStorage.getItem('token');
+    if (token) {
+      // You might need to decode the token to get buyer ID
+      // For now, we'll use a placeholder
+      setBuyerId('buyer_' + Date.now());
+    }
+    fetchReviews();
+  }, [seller.Seller_ID]);
+
+  const fetchReviews = async () => {
+    setLoadingReviews(true);
+    try {
+      const response = await fetch(`/api/reviews?sellerId=${seller.Seller_ID}`);
+      const data = await response.json();
+      if (data.success) {
+        setReviews(data.reviews);
+        setReviewSummary(data.summary);
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    } finally {
+      setLoadingReviews(false);
+    }
+  };
+
+  const handleReviewSubmitted = (newReview) => {
+    setReviews(prev => [newReview, ...prev]);
+    if (reviewSummary) {
+      setReviewSummary(prev => ({
+        ...prev,
+        totalReviews: prev.totalReviews + 1,
+        averageRating: ((prev.averageRating * prev.totalReviews) + newReview.rating) / (prev.totalReviews + 1)
+      }));
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       {/* Header with Back Button */}
@@ -162,7 +207,7 @@ const SellerDetails = ({ seller, onBack }) => {
 
           {/* Action Buttons */}
           <div className="mt-8 pt-6 border-t border-[#45DFB1]">
-            <div className="flex gap-4 justify-center">
+            <div className="flex gap-4 justify-center flex-wrap">
               {seller.Email && (
                 <a 
                   href={`mailto:${seller.Email}`}
@@ -179,10 +224,93 @@ const SellerDetails = ({ seller, onBack }) => {
                   <FaPhone /> Call Now
                 </a>
               )}
+              <button
+                onClick={() => setShowReviewModal(true)}
+                className="bg-[#FF6B6B] hover:bg-[#FF5252] text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+              >
+                <FaCommentDots /> Write Review
+              </button>
             </div>
+          </div>
+
+          {/* Reviews Section */}
+          <div className="mt-8 pt-6 border-t border-[#45DFB1]">
+            <h3 className="text-xl font-semibold text-[#213A57] mb-4 flex items-center gap-2">
+              <FaCommentDots className="text-[#0AD1C8]" />
+              Reviews
+              {reviewSummary && (
+                <span className="text-sm font-normal text-gray-600">
+                  ({reviewSummary.totalReviews} reviews)
+                </span>
+              )}
+            </h3>
+
+            {loadingReviews ? (
+              <div className="text-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0AD1C8] mx-auto"></div>
+                <p className="text-gray-600 mt-2">Loading reviews...</p>
+              </div>
+            ) : reviews.length > 0 ? (
+              <div className="space-y-4 max-h-64 overflow-y-auto">
+                {reviews.slice(0, 5).map((review) => (
+                  <div key={review.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="flex">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <FaStar
+                              key={star}
+                              size={14}
+                              className={star <= review.rating ? 'text-yellow-400' : 'text-gray-300'}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-sm font-medium text-[#213A57]">
+                          {review.rating}/5
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          review.sentiment === 'positive' 
+                            ? 'bg-green-100 text-green-800'
+                            : review.sentiment === 'negative'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {review.sentiment}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(review.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-gray-700 text-sm">{review.comment}</p>
+                  </div>
+                ))}
+                {reviews.length > 5 && (
+                  <p className="text-center text-sm text-gray-500">
+                    Showing 5 of {reviews.length} reviews
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <FaCommentDots size={48} className="mx-auto mb-4 text-gray-300" />
+                <p>No reviews yet. Be the first to review this seller!</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Review Modal */}
+      <ReviewModal
+        isOpen={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        seller={seller}
+        buyerId={buyerId}
+        onReviewSubmitted={handleReviewSubmitted}
+      />
     </div>
   );
 };
@@ -191,12 +319,31 @@ const BuyItems = () => {
   const [sellers, setSellers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [sellerReviews, setSellerReviews] = useState({});
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [availableProducts, setAvailableProducts] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [selectedSeller, setSelectedSeller] = useState(null);
+
+  const fetchSellerReviews = async (sellersList) => {
+    const reviewsData = {};
+    
+    for (const seller of sellersList) {
+      try {
+        const response = await fetch(`/api/reviews?sellerId=${seller.Seller_ID}`);
+        const data = await response.json();
+        if (data.success) {
+          reviewsData[seller.Seller_ID] = data.summary;
+        }
+      } catch (error) {
+        console.error(`Error fetching reviews for seller ${seller.Seller_ID}:`, error);
+      }
+    }
+    
+    setSellerReviews(reviewsData);
+  };
 
   // Load initial data on component mount
   useEffect(() => {
@@ -234,6 +381,9 @@ const BuyItems = () => {
               const sellersArray = sellersData.sellers || [];
               console.log("Setting sellers:", sellersArray);
               setSellers(sellersArray);
+              
+              // Fetch review summaries for all sellers
+              fetchSellerReviews(sellersArray);
               
               if (sellersArray.length === 0) {
                 setError("No sellers available in the database. Please add some sellers first.");
@@ -563,8 +713,21 @@ const BuyItems = () => {
             const safeScore = seller.Score || null;
             const isVerified = seller.Verified === true || seller.Verified === 1 || seller.Verified === "true";
             
+            // Get review status for this seller
+            const reviewSummary = sellerReviews[seller.Seller_ID];
+            const hasReviews = reviewSummary && reviewSummary.totalReviews > 0;
+            const reviewStatus = hasReviews ? 
+              (reviewSummary.sentimentSummary.positive > reviewSummary.sentimentSummary.negative ? 'positive' : 
+               reviewSummary.sentimentSummary.negative > reviewSummary.sentimentSummary.positive ? 'negative' : 'neutral') : 
+              'no-reviews';
+            
             return (
-              <div key={`seller-${seller.Seller_ID || index}`} className="bg-white rounded-lg shadow-md overflow-hidden border border-[#45DFB1] hover:shadow-lg transition-shadow">
+              <div key={`seller-${seller.Seller_ID || index}`} className={`bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-shadow ${
+                reviewStatus === 'positive' ? 'border-green-400' : 
+                reviewStatus === 'negative' ? 'border-red-400' : 
+                reviewStatus === 'neutral' ? 'border-yellow-400' : 
+                'border-[#45DFB1]'
+              }`}>
                 <div className="bg-[#14919B] p-4 text-white">
                   <h3 className="text-xl font-semibold truncate">
                     {safeName}
@@ -573,12 +736,29 @@ const BuyItems = () => {
                     <div className="flex items-center">
                       <FaStar className="text-yellow-300 mr-1" />
                       <span>{safeRating.toFixed(1)}/5.0</span>
+                      {hasReviews && (
+                        <span className="ml-2 text-xs">
+                          ({reviewSummary.totalReviews} reviews)
+                        </span>
+                      )}
                     </div>
-                    {isVerified && (
-                      <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs">
-                        Verified
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {hasReviews && (
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          reviewStatus === 'positive' ? 'bg-green-500 text-white' :
+                          reviewStatus === 'negative' ? 'bg-red-500 text-white' :
+                          'bg-yellow-500 text-white'
+                        }`}>
+                          {reviewStatus === 'positive' ? 'Good Reviews' :
+                           reviewStatus === 'negative' ? 'Bad Reviews' : 'Mixed Reviews'}
+                        </span>
+                      )}
+                      {isVerified && (
+                        <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs">
+                          Verified
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 

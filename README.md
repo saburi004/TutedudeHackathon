@@ -4,6 +4,27 @@
 
 SmartStreetSupply is a full-stack web application designed to help **street food vendors find trusted nearby raw material sellers** while maintaining **high food quality and minimizing daily food wastage**.
 The platform integrates **AI and Machine Learning** to provide **personalized quantity estimation**, **nearest seller discovery**, and **review sentiment analysis**, enabling smarter and more sustainable food operations.
+## Features
+
+- **Review System**: Buyers can write reviews for sellers with sentiment analysis
+- **Color-coded Seller Status**: Sellers are displayed with green/red borders based on review sentiment
+- **Hugging Face Integration**: Automatic sentiment analysis of reviews using AI
+- **Real-time Review Updates**: Reviews are immediately reflected in seller status
+
+## Environment Setup
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```env
+# Hugging Face API Key for sentiment analysis
+# Get your API key from: https://huggingface.co/settings/tokens
+HUGGING_FACE_API_KEY=your_hugging_face_api_key_here
+
+# MongoDB connection string
+MONGODB_URI=your_mongodb_connection_string_here
+```
+
+## Getting Started
 
 ---
 
