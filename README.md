@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🍽️ FoodChain
+### AI-Powered Raw Material Sourcing Platform for Street Food Vendors
+## A perfect combination of AIML and WebDev
 
-## Getting Started
+SmartStreetSupply is a full-stack web application designed to help **street food vendors find trusted nearby raw material sellers** while maintaining **high food quality and minimizing daily food wastage**.
+The platform integrates **AI and Machine Learning** to provide **personalized quantity estimation**, **nearest seller discovery**, and **review sentiment analysis**, enabling smarter and more sustainable food operations.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 👨‍🍳 Street Food Vendors
+- Find **nearby raw material sellers**
+- Get **AI-based raw material quantity estimation**
+- Reduce **daily food wastage**
+- View **seller ratings based on sentiment analysis**
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### 🏪 Raw Material Sellers
+- List available raw materials
+- Reach nearby vendors easily
+- Build trust through transparent reviews
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🧠 AI & Machine Learning
 
-To learn more about Next.js, take a look at the following resources:
+- **KNN Algorithm** to find the nearest raw material sellers
+- **Personalized AI Model** for quantity estimation using daily wastage data
+- **Sentiment Analysis (NLP)** to classify seller reviews
+- **Redis** caching for faster ML model responses
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🏗️ Tech Stack
 
-## Deploy on Vercel
+### Frontend
+- Next.js
+- Tailwind CSS
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Backend
+- Node.js
+- Express.js
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Database
+- MongoDB
+
+### Caching
+- Redis
+
+### Machine Learning
+- K-Nearest Neighbors (KNN)
+- Sentiment Analysis (NLP)
+
+---
+
+## ⚙️ How It Works
+
+1. Vendor enters daily sales and food wastage data
+2. AI estimates the **exact raw material quantity required**
+3. KNN model identifies **nearest trusted sellers**
+4. Sentiment analysis validates seller reviews
+5. Redis caches results for faster future access
+6. Vendor places order with confidence
+
+---
+### Get Started
+
+
+
