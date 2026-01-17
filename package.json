@@ -19,7 +19,7 @@
     "lucide-react": "^0.526.0",
     "mime": "^4.0.7",
     "mongoose": "^8.16.5",
-    "next": "15.4.4",
+    "next": "15.4.10",
     "nodemon": "^3.1.10",
     "react": "19.1.0",
     "react-confetti": "^6.4.0",
