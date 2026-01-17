@@ -63,7 +63,36 @@ The platform integrates **AI and Machine Learning** to provide **personalized qu
 6. Vendor places order with confidence
 
 ---
-### Get Started
+## 🚀 Getting Started
+
+Follow these steps to run the project locally.
+
+---
+
+### 📦 Prerequisites
+Make sure you have the following installed:
+- **Node.js** (v18 or above recommended)
+- **npm**
+- **MongoDB**
+- **Redis**
+- **Docker compose**
+  
+---
+
+### 🔽 Clone the Repository
+```bash
+git clone https://github.com/saburi004/TutedudeHackathon.git
+cd TutedudeHackathon
+npm install
+```
+Create a .env file in the root directory and add the following:
+JWT_SECRET=your_secret_key
+MONGO_URI=your_mongodb_connection_string
+GROQ_API_KEY=your_api_key
+
+```bash
+docker compose up -d 
+npm run dev
 
 
 
